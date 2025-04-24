@@ -6,10 +6,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @MapperScan("team.work.platform.mapper") // 自动扫描所有 Mapper 接口
-public class PlatfromApplication {
-	
+public class PlatformApplication {
+
 	public static void main(String[] args) {
-		SpringApplication.run(PlatfromApplication.class, args);
+		SpringApplication.run(PlatformApplication.class, args);
 	}
 
 }

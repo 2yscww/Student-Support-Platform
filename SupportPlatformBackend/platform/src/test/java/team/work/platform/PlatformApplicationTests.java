@@ -1,10 +1,10 @@
-package team.work.platfrom;
+package team.work.platform;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PlatfromApplicationTests {
+class PlatformApplicationTests {
 
 	@Test
 	void contextLoads() {

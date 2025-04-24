@@ -21,7 +21,7 @@ import team.work.platform.model.enumValue.Status;
 
 public class Users {
 
-    @TableId
+    @TableId(value = "user_id")
     private Long userID;
 
     private String username;  // 对应 username
