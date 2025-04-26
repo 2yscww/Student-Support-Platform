@@ -5,30 +5,74 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import team.work.platform.dto.registerUserDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
+import team.work.platform.common.Response;
 
 @Service
-public class UsersServiceImpl implements UsersService{
+public class UsersServiceImpl implements UsersService {
 
     @Autowired
-    private UsersMapper usersMapper;
+    private UsersMapper usersmapper;
 
+    // 查找用户名
     @Override
-    public List<Users> getAllUsers() {
-        // 查询全部
-        return usersMapper.selectList(null);
+    public Users selectByUserName(String userName) {
+        return usersmapper.selectByUserName(userName);
     }
 
+    // 查找邮箱
     @Override
-    public Users getUserById(Long id) {
-        return usersMapper.selectById(id);
+    public Users selectByUserEmail(String email) {
+        return usersmapper.selectByUserEmail(email);
     }
 
+    // 判断用户名是否存在
     @Override
-    public void createUser(Users user) {
-        usersMapper.insert(user);
+    public boolean isUserNameExist(String userName) {
+        Users user = usersmapper.selectByUserName(userName);
+        return user != null;
     }
-    
+
+    // 判断邮箱是否存在
+    @Override
+    public boolean isEmailExist(String email) {
+        Users user = usersmapper.selectByUserEmail(email); // 查询邮箱
+        return user != null;
+    }
+
+    // 判断密码是否一致
+    @Override
+    public boolean isPasswordEqual(registerUserDTO registerUserDTO) {
+        return registerUserDTO.getPassword().equals(
+                registerUserDTO.getConfirmPassword());
+
+    }
+
+    // ? 注册用户
+    // TODO 完善注册逻辑
+    @Override
+    public Response<Object> registerUser(registerUserDTO registerUserDTO) {
+
+        if (isUserNameExist(registerUserDTO.getUsername())) {
+            return Response.Fail(null, "用户名或者邮箱重复!");
+        }
+
+        if (isEmailExist(registerUserDTO.getEmail())) {
+            return Response.Fail(null, "用户名或者邮箱重复!");
+        }
+
+        if (!isPasswordEqual(registerUserDTO)) {
+            return Response.Fail(null, "两次密码不一致!");
+        }
+
+        usersmapper.createUser(registerUserDTO.getUsername(),
+                registerUserDTO.getEmail(),
+                registerUserDTO.getPassword());
+
+        return Response.Success(null, "注册成功!");
+    }
+
 }

@@ -10,8 +10,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import team.work.platform.common.Response;
+import team.work.platform.dto.registerUserDTO;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/user")
@@ -20,20 +24,25 @@ public class UserController {
     @Autowired
     private UsersService usersService;
 
-    @GetMapping
-    public List<Users> getAllUsers() {
-        return usersService.getAllUsers();
-    }
+    // 查找用户名
+    // @PostMapping("/username")
+    // public Users getUserName(@RequestParam String userName) {
+    //     return usersService.selectByUserName(userName);
+    // }
 
-    @GetMapping("/{id}")
-    public Users getUserById(@PathVariable Long id) {
-        return usersService.getUserById(id);
-    }
+    // 查找邮箱
+    // @PostMapping("/email")
+    // public Users getUserEmail(@RequestParam String email) {
+    //     return usersService.selectByUserEmail(email);
+    // }
+    
+    // TODO 上线注册用户功能
 
-    @PostMapping
-    public String createUser(@RequestBody Users user) {
-        usersService.createUser(user);
-        return "User created successfully!";
+    @PostMapping("/register")
+    public Response<Object> postMethodName(@RequestBody registerUserDTO registerUserDTO) {
+        return usersService.registerUser(registerUserDTO);
+        
     }
+    
 
 }
