@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import team.work.platform.dto.registerUserDTO;
+import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
@@ -45,7 +45,7 @@ public class UsersServiceImpl implements UsersService {
 
     // 判断密码是否一致
     @Override
-    public boolean isPasswordEqual(registerUserDTO registerUserDTO) {
+    public boolean isPasswordEqual(RegisterUserDTO registerUserDTO) {
         return registerUserDTO.getPassword().equals(
                 registerUserDTO.getConfirmPassword());
 
@@ -54,14 +54,14 @@ public class UsersServiceImpl implements UsersService {
     // ? 注册用户
     // TODO 完善注册逻辑
     @Override
-    public Response<Object> registerUser(registerUserDTO registerUserDTO) {
+    public Response<Object> registerUser(RegisterUserDTO registerUserDTO) {
 
         if (isUserNameExist(registerUserDTO.getUsername())) {
-            return Response.Fail(null, "用户名或者邮箱重复!");
+            return Response.Fail(null, "用户名重复!");
         }
 
         if (isEmailExist(registerUserDTO.getEmail())) {
-            return Response.Fail(null, "用户名或者邮箱重复!");
+            return Response.Fail(null, "此邮箱已注册过账户!");
         }
 
         if (!isPasswordEqual(registerUserDTO)) {

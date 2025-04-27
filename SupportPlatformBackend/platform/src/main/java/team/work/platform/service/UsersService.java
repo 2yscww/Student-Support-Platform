@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 
 import team.work.platform.common.Response;
-import team.work.platform.dto.registerUserDTO;
+import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.model.Users;
 
 public interface UsersService {
@@ -23,9 +23,9 @@ public interface UsersService {
     boolean isEmailExist(String email);
 
     // 判断密码是否一致
-    boolean isPasswordEqual(registerUserDTO registerUserDTO);
+    boolean isPasswordEqual(RegisterUserDTO registerUserDTO);
 
     //注册用户
-    Response<Object> registerUser(registerUserDTO registerUserDTO);
+    Response<Object> registerUser(RegisterUserDTO registerUserDTO);
     
 }

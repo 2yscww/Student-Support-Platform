@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import team.work.platform.common.Response;
-import team.work.platform.dto.registerUserDTO;
+import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,7 +39,7 @@ public class UserController {
     // TODO 上线注册用户功能
 
     @PostMapping("/register")
-    public Response<Object> postMethodName(@RequestBody registerUserDTO registerUserDTO) {
+    public Response<Object> postMethodName(@RequestBody RegisterUserDTO registerUserDTO) {
         return usersService.registerUser(registerUserDTO);
         
     }

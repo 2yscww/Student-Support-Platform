@@ -2,6 +2,8 @@ package team.work.platform.common;
 
 import lombok.Data;
 
+// ? 自定义返回的json格式
+
 @Data
 public class Response<T> {
 
