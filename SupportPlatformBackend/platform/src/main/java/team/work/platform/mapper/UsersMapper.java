@@ -23,10 +23,13 @@ public interface UsersMapper extends BaseMapper<Users> {
     @Select("SELECT * FROM users where email = #{email}")
     Users selectByUserEmail(@Param("email") String email);
 
+    // 通过邮箱查找密码
+    @Select("SELECT password FROM users WHERE email = #{email}")
+    Users findPasswordByEmail(@Param("email") String email);
+
     @Insert("INSERT INTO users(username,email,password) VALUES(#{userName},#{email},#{password})")
-    int createUser(@Param("userName") String userName, @Param("email") String email, @Param("password") String password);
-
-
+    int createUser(@Param("userName") String userName, @Param("email") String email,
+            @Param("password") String password);
 
     // INSERT INTO users(username,email,password)
     // VALUES("test1","123@123.com","123456");
