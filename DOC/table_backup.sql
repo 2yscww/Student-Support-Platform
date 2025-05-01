@@ -24,7 +24,7 @@ CREATE TABLE tasks (
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     deadline DATETIME,
-    reward DECIMAL(10, 2) NOT NULL,
+    reward DECIMAL(10, 2) NOT NULL, 
     status ENUM('PENDING', 'IN_PROGRESS', 'SUBMITTED', 'COMPLETED', 'CANCELLED', 'EXPIRED') DEFAULT 'PENDING'
 );
 
@@ -35,6 +35,8 @@ CREATE TABLE tasks (
 --  COMPLETED	发布者确认完成
 --  CANCELLED	发布者或系统取消
 --  EXPIRED	截止时间已过，无人接单
+
+-- reward 悬赏金额
 
 
 -- ! 接单表
