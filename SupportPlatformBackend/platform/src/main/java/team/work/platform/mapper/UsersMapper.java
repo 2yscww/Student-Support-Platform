@@ -7,9 +7,9 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 
-import team.work.platform.model.Users;
+
+
 
 @Mapper
 public interface UsersMapper extends BaseMapper<Users> {
@@ -27,6 +27,7 @@ public interface UsersMapper extends BaseMapper<Users> {
     @Select("SELECT password FROM users WHERE email = #{email}")
     Users findPasswordByEmail(@Param("email") String email);
 
+    // 创建用户
     @Insert("INSERT INTO users(username,email,password) VALUES(#{userName},#{email},#{password})")
     int createUser(@Param("userName") String userName, @Param("email") String email,
             @Param("password") String password);
