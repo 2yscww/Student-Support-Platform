@@ -27,6 +27,14 @@ public class UserValidator {
 
     }
 
+    // * 通过ID验证用户是否存在
+
+    public boolean isUserIDExist(Long userID) {
+        Users user = usersMapper.selectByUserID(userID);
+
+        return user != null;
+    }
+
     // * 验证邮箱是否存在
     public boolean isEmailExist(String email) {
         Users userEmail = usersMapper.selectByUserEmail(email); // 查询邮箱

@@ -25,7 +25,7 @@ public class UsersServiceImpl implements UsersService {
 
 
     // ? 用户注册
-    // TODO 完善注册逻辑
+    
     @Override
     public Response<Object> RegisterUser(RegisterUserDTO registerUserDTO) {
 
@@ -41,6 +41,7 @@ public class UsersServiceImpl implements UsersService {
             return Response.Fail(null, "两次密码不一致!");
         }
 
+
         String encodePassword = passwordEncoder.encode(registerUserDTO.getPassword());
 
         usersmapper.createUser(registerUserDTO.getUsername(),
@@ -54,7 +55,7 @@ public class UsersServiceImpl implements UsersService {
     // ? 用户登录
     @Override
     public Response<Object> LoginUser(LoginUserDTO loginUserDTO) {
-        // TODO 完善用户登录逻辑
+        
         
         if (!userValidator.isEmailExist(loginUserDTO.getEmail())) {
             return Response.Fail(null, "邮箱未注册!");

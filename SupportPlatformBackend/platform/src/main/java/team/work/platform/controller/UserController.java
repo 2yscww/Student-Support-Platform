@@ -40,14 +40,14 @@ public class UserController {
     
     // ? 用户注册
     @PostMapping("/register")
-    public Response<Object> postMethodName(@RequestBody RegisterUserDTO registerUserDTO) {
+    public Response<Object> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
         return usersService.RegisterUser(registerUserDTO);
         
     }
 
     // ? 用户登录
     @PostMapping("/login")
-    public Response<Object> postMethodName(@RequestBody LoginUserDTO loginUserDTO) {
+    public Response<Object> userLogin(@RequestBody LoginUserDTO loginUserDTO) {
         return usersService.LoginUser(loginUserDTO);
         
     }
