@@ -19,6 +19,10 @@ public interface UsersMapper extends BaseMapper<Users> {
     @Select("SELECT * FROM users where username = #{userName}")
     Users selectByUserName(@Param("userName") String userName);
 
+    // 通过ID查找用户
+    @Select("SELECT * FROM users where user_id = #{userID}")
+    Users selectByUserID(@Param("userID") Long userID);
+
     // 查找邮箱
     @Select("SELECT * FROM users where email = #{email}")
     Users selectByUserEmail(@Param("email") String email);
