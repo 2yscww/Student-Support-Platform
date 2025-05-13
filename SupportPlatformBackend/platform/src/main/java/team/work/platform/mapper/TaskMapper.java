@@ -10,12 +10,15 @@ import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.model.Tasks;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 @Mapper
 public interface TaskMapper extends BaseMapper<Tasks> {
     // TODO 接下去要完善service层
+
+    // TODO 完善查看任务和订单的功能实现
     // ? 思路是由用户提交的task信息来创建任务，然后再由后端来进行创建接单状态
 
     // 查询所有任务
@@ -31,9 +34,14 @@ public interface TaskMapper extends BaseMapper<Tasks> {
     @Delete("DELETE FROM tasks WHERE task_id = #{taskID}")
     int deleteTask(@Param("taskID") int taskID);
 
+    List<TaskDetailsDTO> getAllTaskDetails();
+
     
 
-    // delete from tasks where task_id = 2;
+    
+}
+
+// delete from tasks where task_id = 2;
 
     // INSERT INTO tasks(title,description,reward)
     // VALUES("帮我开发网站","我需要一个vue框架开发的前端网站",5000)
@@ -43,7 +51,6 @@ public interface TaskMapper extends BaseMapper<Tasks> {
     // int createUser(@Param("userName") String userName, @Param("email") String
     // email,
     // @Param("password") String password);
-}
 
 // ! 任务表
 
