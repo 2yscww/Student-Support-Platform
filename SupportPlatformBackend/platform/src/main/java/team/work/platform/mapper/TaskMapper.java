@@ -16,9 +16,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 @Mapper
 public interface TaskMapper extends BaseMapper<Tasks> {
-    // TODO 接下去要完善service层
 
-    // TODO 完善查看任务和订单的功能实现
+
     // ? 思路是由用户提交的task信息来创建任务，然后再由后端来进行创建接单状态
 
     // 查询所有任务

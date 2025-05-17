@@ -10,11 +10,13 @@ import org.springframework.stereotype.Service;
 
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
+import team.work.platform.dto.OrderApplyDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.mapper.OrdersMapper;
 import team.work.platform.mapper.TaskMapper;
 import team.work.platform.model.Orders;
 import team.work.platform.model.Tasks;
+import team.work.platform.model.enumValue.OrderStatus;
 import team.work.platform.model.enumValue.TaskStatus;
 import team.work.platform.service.OrdersService;
 import team.work.platform.util.UserValidator;
@@ -110,8 +112,65 @@ public class OrdersServiceImpl implements OrdersService {
         if (ordersList != null && !ordersList.isEmpty()) {
             return Response.Success(ordersList, "查询成功");
         } else {
-            return Response.Success(null, "暂无发布的任务");
+            return Response.Success(new ArrayList<>(), "暂无发布的任务");
         }
+    }
+    
+    // ? 申请接单
+    @Override
+    public Response<Object> applyForOrder(OrderApplyDTO orderApplyDTO) {
+
+        Long orderId = orderApplyDTO.getOrderId();
+        Long taskId = orderApplyDTO.getTaskId();
+        Long receiverId = orderApplyDTO.getReceiverId();
+        
+        // 验证用户ID是否存在
+        if (!userValidator.isUserIDExist(receiverId)) {
+            return Response.Fail(null, "用户不存在!");
+        }
+        
+        // 验证任务是否存在
+        Tasks task = tasksMapper.selectById(taskId);
+        if (task == null) {
+            return Response.Fail(null, "任务不存在!");
+        }
+        
+        // 验证任务状态是否为待接单
+        if (task.getStatus() != TaskStatus.PENDING) {
+            return Response.Fail(null, "该任务不可申请!");
+        }
+        
+        // 验证订单ID和任务ID是否在同一条记录中
+        int matchCount = ordersMapper.verifyOrderTaskMatch(orderId.intValue(), taskId.intValue());
+        if (matchCount <= 0) {
+            return Response.Fail(null, "订单与任务不匹配!");
+        }
+        
+        // 查询订单信息
+        Orders order = ordersMapper.selectById(orderId);
+        if (order == null) {
+            return Response.Fail(null, "订单信息不存在!");
+        }
+        
+        // 检查申请人是否为任务发布者
+        if (order.getPosterId().equals(receiverId)) {
+            return Response.Fail(null, "不能申请自己发布的任务!");
+        }
+        
+        // 更新订单信息，设置接单人和订单状态
+        int result = ordersMapper.updateReceiverID(receiverId.intValue(), taskId.intValue());
+        if (result <= 0) {
+            return Response.Fail(null, "申请失败!");
+        }
+        
+        // 更新订单状态为已申请
+        ordersMapper.updateOrderStatus(OrderStatus.APPLIED.name(), taskId.intValue());
+        
+        // 更新任务状态
+        task.setStatus(TaskStatus.IN_PROGRESS);
+        tasksMapper.updateById(task);
+        
+        return Response.Success(null, "申请成功，等待发布者确认!");
     }
 }
 

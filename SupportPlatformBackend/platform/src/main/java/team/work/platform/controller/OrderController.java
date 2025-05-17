@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
+import team.work.platform.dto.OrderApplyDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.service.OrdersService;
 
@@ -26,13 +27,9 @@ public class OrderController {
     private OrdersService ordersService;
 
 
-
-    
-
-    // 增加任务和接单
+    // ? 增加任务和接单
     @PostMapping("/publish")
     public Response<Object> createTaskAndOrder(@RequestBody OrderDTO orderDTO) {
-        //TODO: 完善任务和接单的控制层
         
         return ordersService.CreateTaskAndOrder(orderDTO);
     }
@@ -50,7 +47,14 @@ public class OrderController {
     
     // ? 查询用户发布的任务
     @PostMapping("/my_published")
+    //TODO 修改回GET方法
     public Response<List<TaskDetailsDTO>> getMyPublishedOrders(@RequestBody OrderDTO orderDTO) {
         return ordersService.getOrdersByPosterId(orderDTO);
+    }
+    
+    // ? 申请接单
+    @PostMapping("/apply")
+    public Response<Object> applyForTask(@RequestBody OrderApplyDTO orderApplyDTO) {
+        return ordersService.applyForOrder(orderApplyDTO);
     }
 }

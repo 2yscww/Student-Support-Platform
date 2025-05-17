@@ -17,7 +17,7 @@ import team.work.platform.model.Orders;
 @Mapper
 public interface OrdersMapper extends BaseMapper<Orders> {
 
-    // TODO 完善订单mapper
+
 
     // 查看订单
     @Select("SELECT * FROM orders")
@@ -42,7 +42,7 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Select("SELECT * FROM orders WHERE receiver_id = #{receiverID}")
     List<Orders> selectOrdersByReceiverId(@Param("receiverID") int receiverID);
 
-    // 更新订单状态
+    // ? 更新订单状态
     @Update("UPDATE orders SET order_status = #{orderStatus} WHERE order_id = #{orderID}")
     int updateOrderStatus(@Param("orderStatus") String orderStatus, @Param("orderID") int orderID);
 
@@ -53,6 +53,10 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     // 删除订单
     @Delete("DELETE FROM orders WHERE order_id = #{orderID}")
     int deleteOrder(@Param("orderID") int orderID);
+    
+    // 验证订单ID和任务ID是否匹配
+    @Select("SELECT COUNT(*) FROM orders WHERE order_id = #{orderID} AND task_id = #{taskID}")
+    int verifyOrderTaskMatch(@Param("orderID") int orderID, @Param("taskID") int taskID);
 
 }
 
