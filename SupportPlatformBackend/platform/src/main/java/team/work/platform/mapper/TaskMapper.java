@@ -34,6 +34,7 @@ public interface TaskMapper extends BaseMapper<Tasks> {
     @Delete("DELETE FROM tasks WHERE task_id = #{taskID}")
     int deleteTask(@Param("taskID") int taskID);
 
+    // 查看所有任务
     List<TaskDetailsDTO> getAllTaskDetails();
 
     

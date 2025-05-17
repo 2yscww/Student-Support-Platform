@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Update;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.model.Orders;
 
 @Mapper
@@ -34,9 +35,8 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Update("UPDATE orders SET receiver_id = #{receiverID} where order_id = #{orderID}")
     int updateReceiverID(@Param("receiverID") int receiverID, @Param("orderID") int orderID);
 
-    // 根据发布者查询订单
-    @Select("SELECT * FROM orders WHERE poster_id = #{posterID}")
-    List<Orders> selectOrdersByPosterId(@Param("posterID") int posterID);
+    // ? 根据发布者查询订单
+    List<TaskDetailsDTO> selectOrdersByPosterId(@Param("posterId") Long posterId);
 
     // 根据接单人查询订单
     @Select("SELECT * FROM orders WHERE receiver_id = #{receiverID}")

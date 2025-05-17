@@ -2,6 +2,7 @@ package team.work.platform.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
+import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.mapper.OrdersMapper;
 import team.work.platform.mapper.TaskMapper;
 import team.work.platform.model.Orders;
@@ -29,6 +31,23 @@ public class OrdersServiceImpl implements OrdersService {
     @Autowired
     private UserValidator userValidator;
 
+
+    // ? 查看订单
+    @Override
+    public Response<Object> ViewOrders() {
+
+        // TODO 完善查看任务和订单的功能逻辑
+
+        List ordersList = ordersMapper.selectAllOrders();
+
+        return Response.Success(ordersList, null);
+    }
+
+    // poster_id BIGINT NOT NULL,
+    // receiver_id BIGINT ,
+    // order_status ENUM('APPLIED', 'ACCEPTED', 'SUBMITTED', 'CONFIRMED', 'CANCELLED') DEFAULT 'APPLIED',
+
+    // ? 创建任务和订单
     @Override
     public Response<Object> CreateTaskAndOrder(OrderDTO orderDTO) {
 
@@ -70,6 +89,30 @@ public class OrdersServiceImpl implements OrdersService {
         return Response.Success(null, "任务创建成功!");
     }
 
+    // ? 获取所有任务详情
+    public List<TaskDetailsDTO> getAllTaskDetails() {
+        return tasksMapper.getAllTaskDetails();
+    }
+
+    
+    // ? 查询用户发布的任务
+    @Override
+    public Response<List<TaskDetailsDTO>> getOrdersByPosterId(OrderDTO orderDTO) {
+        // 验证用户ID是否存在
+        Long posterId = orderDTO.getPosterId();
+        if (!userValidator.isUserIDExist(posterId)) {
+            return Response.Fail(null, "用户不存在!");
+        }
+        
+        // 查询该用户发布的任务详情
+        List<TaskDetailsDTO> ordersList = ordersMapper.selectOrdersByPosterId(posterId);
+        
+        if (ordersList != null && !ordersList.isEmpty()) {
+            return Response.Success(ordersList, "查询成功");
+        } else {
+            return Response.Success(null, "暂无发布的任务");
+        }
+    }
 }
 
 // @Override

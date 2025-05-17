@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 // TaskDetailsDTO.java
 public class TaskDetailsDTO {
+    private Long orderId;
     private Long taskId;
     private String title;
     private String description;

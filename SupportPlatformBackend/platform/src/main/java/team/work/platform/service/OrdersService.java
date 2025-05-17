@@ -20,6 +20,7 @@ public interface OrdersService {
     // ? 获取所有任务详情
     List<TaskDetailsDTO> getAllTaskDetails();
 
-
+    // ? 查询用户发布的任务
+    Response<List<TaskDetailsDTO>> getOrdersByPosterId(OrderDTO orderDTO);
 
 }

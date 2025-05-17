@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="team.work.platform.mapper.TaskMapper">
-    <select id="getAllTaskDetails" resultType="team.work.platform.dto.TaskDetailsDTO">
+<mapper namespace="team.work.platform.mapper.OrdersMapper">
+    <select id="selectOrdersByPosterId" resultType="team.work.platform.dto.TaskDetailsDTO">
         SELECT
             o.order_id,
             t.task_id,
@@ -17,6 +17,7 @@
         LEFT JOIN orders o ON o.task_id = t.task_id
         LEFT JOIN users poster ON o.poster_id = poster.user_id
         LEFT JOIN users receiver ON o.receiver_id = receiver.user_id
+        WHERE o.poster_id = #{posterId}
     </select>
 
 </mapper>
