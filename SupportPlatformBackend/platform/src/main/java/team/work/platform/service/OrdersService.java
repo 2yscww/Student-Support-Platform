@@ -8,6 +8,7 @@ import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.dto.TaskDetailsDTO;
+import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.model.Orders;
 
 public interface OrdersService {
@@ -27,5 +28,8 @@ public interface OrdersService {
 
     // ? 申请接单
     Response<Object> applyForOrder(OrderApplyDTO orderApplyDTO);
+
+    // ? 提交任务结果
+    Response<Object> submitOrder(OrderSubmitDTO submitDTO);
 
 }

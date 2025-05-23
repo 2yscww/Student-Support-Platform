@@ -58,6 +58,17 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Select("SELECT COUNT(*) FROM orders WHERE order_id = #{orderID} AND task_id = #{taskID}")
     int verifyOrderTaskMatch(@Param("orderID") int orderID, @Param("taskID") int taskID);
 
+    // 更新订单确认时间
+    @Update("UPDATE orders SET confirmed_at = CURRENT_TIMESTAMP WHERE order_id = #{orderID}")
+    int updateConfirmedTime(@Param("orderID") int orderID);
+
+    // 更新关联任务状态
+    @Update("UPDATE tasks t " +
+           "JOIN orders o ON t.task_id = o.task_id " +
+           "SET t.status = #{taskStatus} " +
+           "WHERE o.order_id = #{orderID}")
+    int updateTaskStatus(@Param("taskStatus") String taskStatus, @Param("orderID") int orderID);
+
 }
 
 // -- ! 接单表

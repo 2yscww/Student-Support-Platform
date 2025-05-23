@@ -7,15 +7,20 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import team.work.platform.common.Response;
+import team.work.platform.common.JwtAuthenticationFilter;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.mapper.OrdersMapper;
 import team.work.platform.mapper.TaskMapper;
+import team.work.platform.mapper.OrderSubmissionMapper;
 import team.work.platform.model.Orders;
 import team.work.platform.model.Tasks;
+import team.work.platform.model.OrderSubmission;
 import team.work.platform.model.enumValue.OrderStatus;
 import team.work.platform.model.enumValue.TaskStatus;
 import team.work.platform.service.OrdersService;
@@ -29,6 +34,9 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Autowired
     private TaskMapper tasksMapper;
+
+    @Autowired
+    private OrderSubmissionMapper submissionMapper;
 
     @Autowired
     private UserValidator userValidator;
@@ -164,13 +172,75 @@ public class OrdersServiceImpl implements OrdersService {
         }
         
         // 更新订单状态为已申请
-        ordersMapper.updateOrderStatus(OrderStatus.APPLIED.name(), taskId.intValue());
+        // * 目前是接单者提交申请就直接接受，也就是发布者与接单者 一对一
+        ordersMapper.updateOrderStatus(OrderStatus.ACCEPTED.name(), taskId.intValue());
         
         // 更新任务状态
         task.setStatus(TaskStatus.IN_PROGRESS);
         tasksMapper.updateById(task);
         
         return Response.Success(null, "申请成功，等待发布者确认!");
+    }
+
+
+    // ? 提交任务结果
+    @Override
+    @Transactional
+    public Response<Object> submitOrder(OrderSubmitDTO submitDTO) {
+        
+        // 获取当前登录用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "未获取到用户信息");
+        }
+
+        // 查询订单信息
+        Orders order = ordersMapper.selectOrderById(submitDTO.getOrderId().intValue());
+        if (order == null) {
+            return Response.Fail(null, "订单不存在");
+        }
+
+        // 验证当前用户是否为接单者
+        if (!currentUserId.equals(order.getReceiverId())) {
+            return Response.Fail(null, "只有接单者可以提交任务结果");
+        }
+
+        // 验证订单状态是否为已接受
+        if (order.getOrderStatus() != OrderStatus.ACCEPTED) {
+            return Response.Fail(null, "当前订单状态不允许提交结果");
+        }
+
+        // 保存成果提交信息
+        OrderSubmission submission = new OrderSubmission();
+        submission.setOrderId(submitDTO.getOrderId());
+        submission.setDescription(submitDTO.getDescription());
+        submission.setAttachmentUrl(submitDTO.getAttachmentUrl());
+        submission.setSubmittedAt(LocalDateTime.now());
+        
+        int submissionResult = submissionMapper.insert(submission);
+        if (submissionResult <= 0) {
+            return Response.Fail(null, "保存提交内容失败");
+        }
+
+        // 更新订单状态为已提交
+        int statusResult = ordersMapper.updateOrderStatus(OrderStatus.SUBMITTED.name(), submitDTO.getOrderId().intValue());
+        if (statusResult <= 0) {
+            return Response.Fail(null, "更新订单状态失败");
+        }
+
+        // 更新确认时间
+        int timeResult = ordersMapper.updateConfirmedTime(submitDTO.getOrderId().intValue());
+        if (timeResult <= 0) {
+            return Response.Fail(null, "更新确认时间失败");
+        }
+
+        // 更新任务状态
+        int taskResult = ordersMapper.updateTaskStatus(TaskStatus.COMPLETED.name(), submitDTO.getOrderId().intValue());
+        if (taskResult <= 0) {
+            return Response.Fail(null, "更新任务状态失败");
+        }
+
+        return Response.Success(null, "任务结果提交成功");
     }
 }
 

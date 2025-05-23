@@ -19,6 +19,8 @@ import team.work.platform.util.JwtUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -62,13 +64,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List<SimpleGrantedAuthority> authorities = Collections.singletonList(
                         new SimpleGrantedAuthority("ROLE_" + user.getRole()));
                 
+                // 创建包含用户ID的details
+                Map<String, Object> details = new HashMap<>();
+                details.put("userId", user.getUserID());
+                
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userEmail, null, authorities);
+                
+                // 设置认证详情
+                authToken.setDetails(details);
                 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
         
         filterChain.doFilter(request, response);
+    }
+    
+    // 获取当前用户ID的静态方法
+    public static Long getCurrentUserId() {
+        try {
+            Object details = SecurityContextHolder.getContext().getAuthentication().getDetails();
+            if (details instanceof Map) {
+                return ((Map<String, Long>) details).get("userId");
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

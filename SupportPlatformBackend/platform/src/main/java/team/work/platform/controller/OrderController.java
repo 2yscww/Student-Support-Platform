@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.service.OrdersService;
 
@@ -56,5 +57,11 @@ public class OrderController {
     @PostMapping("/apply")
     public Response<Object> applyForTask(@RequestBody OrderApplyDTO orderApplyDTO) {
         return ordersService.applyForOrder(orderApplyDTO);
+    }
+
+    // ? 提交任务结果
+    @PostMapping("/submit")
+    public Response<Object> submitOrder(@RequestBody OrderSubmitDTO submitDTO) {
+        return ordersService.submitOrder(submitDTO);
     }
 }
