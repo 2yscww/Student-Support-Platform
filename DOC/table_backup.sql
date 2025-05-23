@@ -15,7 +15,6 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- ! 任务表
 
 CREATE TABLE tasks (
@@ -24,8 +23,15 @@ CREATE TABLE tasks (
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     deadline DATETIME,
-    reward DECIMAL(10, 2) NOT NULL, 
-    status ENUM('PENDING', 'IN_PROGRESS', 'SUBMITTED', 'COMPLETED', 'CANCELLED', 'EXPIRED') DEFAULT 'PENDING'
+    reward DECIMAL(10, 2) NOT NULL,
+    status ENUM(
+        'PENDING',
+        'IN_PROGRESS',
+        'SUBMITTED',
+        'COMPLETED',
+        'CANCELLED',
+        'EXPIRED'
+    ) DEFAULT 'PENDING'
 );
 
 -- ? 枚举值	含义说明
@@ -38,28 +44,33 @@ CREATE TABLE tasks (
 
 -- reward 悬赏金额
 
-
 -- ! 接单表
 
 CREATE TABLE orders (
     order_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     task_id BIGINT NOT NULL,
     poster_id BIGINT NOT NULL,
-    receiver_id BIGINT ,
-    order_status ENUM('UNASSIGNED','APPLIED', 'ACCEPTED', 'SUBMITTED', 'CONFIRMED', 'CANCELLED') DEFAULT 'UNASSIGNED',
+    receiver_id BIGINT,
+    order_status ENUM(
+        'UNASSIGNED',
+        'APPLIED',
+        'ACCEPTED',
+        'SUBMITTED',
+        'CONFIRMED',
+        'CANCELLED'
+    ) DEFAULT 'UNASSIGNED',
     payment_status ENUM('UNPAID', 'PAID') DEFAULT 'UNPAID',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     confirmed_at DATETIME DEFAULT NULL,
-
-    CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks(task_id),
-    CONSTRAINT fk_poster FOREIGN KEY (poster_id) REFERENCES users(user_id),
-    CONSTRAINT fk_receiver FOREIGN KEY (receiver_id) REFERENCES users(user_id)
+    CONSTRAINT fk_task FOREIGN KEY (task_id) REFERENCES tasks (task_id),
+    CONSTRAINT fk_poster FOREIGN KEY (poster_id) REFERENCES users (user_id),
+    CONSTRAINT fk_receiver FOREIGN KEY (receiver_id) REFERENCES users (user_id)
 );
-
 
 -- ? 接单状态 order_status：
 
 -- 枚举值	含义说明
+-- UNASSIGNED 还未有人申请接单
 -- APPLIED	接单人提交申请，等待发布者选择
 -- ACCEPTED	发布者已选定接单人
 -- SUBMITTED	接单人已提交成果
@@ -73,6 +84,17 @@ CREATE TABLE orders (
 -- PAID	发布者已支付报酬
 
 
+-- ! 成果提交表
+
+CREATE TABLE order_submissions (
+    submission_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    order_id BIGINT NOT NULL,
+    description TEXT NOT NULL COMMENT '接单者提交的成果描述',
+    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    attachment_url VARCHAR(255) DEFAULT NULL COMMENT '成果附件链接',
+    CONSTRAINT fk_order_submission FOREIGN KEY (order_id) REFERENCES orders (order_id) ON DELETE CASCADE
+);
+
 -- ! 评价表
 
 CREATE TABLE reviews (
@@ -83,14 +105,12 @@ CREATE TABLE reviews (
     rating INT CHECK (rating BETWEEN 1 AND 5),
     content TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_review_task FOREIGN KEY (task_id) REFERENCES tasks(task_id),
-    CONSTRAINT fk_reviewer FOREIGN KEY (reviewer_id) REFERENCES users(user_id),
-    CONSTRAINT fk_reviewee FOREIGN KEY (reviewee_id) REFERENCES users(user_id),
+    CONSTRAINT fk_review_task FOREIGN KEY (task_id) REFERENCES tasks (task_id),
+    CONSTRAINT fk_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (user_id),
+    CONSTRAINT fk_reviewee FOREIGN KEY (reviewee_id) REFERENCES users (user_id),
     -- 这里就是添加唯一约束
     UNIQUE KEY uq_task_user_pair (task_id, reviewer_id)
 );
-
 
 -- ! 举报表
 
@@ -101,13 +121,16 @@ CREATE TABLE reports (
     reported_task_id BIGINT,
     reported_review_id BIGINT,
     reason TEXT NOT NULL,
-    status ENUM('PENDING', 'RESOLVED', 'REJECTED') DEFAULT 'PENDING',
+    status ENUM(
+        'PENDING',
+        'RESOLVED',
+        'REJECTED'
+    ) DEFAULT 'PENDING',
     reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_reporter FOREIGN KEY (reporter_id) REFERENCES users(user_id),
-    CONSTRAINT fk_reported_user FOREIGN KEY (reported_user_id) REFERENCES users(user_id),
-    CONSTRAINT fk_reported_task FOREIGN KEY (reported_task_id) REFERENCES tasks(task_id),
-    CONSTRAINT fk_reported_review FOREIGN KEY (reported_review_id) REFERENCES reviews(review_id)
+    CONSTRAINT fk_reporter FOREIGN KEY (reporter_id) REFERENCES users (user_id),
+    CONSTRAINT fk_reported_user FOREIGN KEY (reported_user_id) REFERENCES users (user_id),
+    CONSTRAINT fk_reported_task FOREIGN KEY (reported_task_id) REFERENCES tasks (task_id),
+    CONSTRAINT fk_reported_review FOREIGN KEY (reported_review_id) REFERENCES reviews (review_id)
 );
 
 -- ? 字段名	类型建议	含义说明
