@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.model.Tasks;
@@ -35,6 +36,17 @@ public interface TaskMapper extends BaseMapper<Tasks> {
 
     // 查看所有任务
     List<TaskDetailsDTO> getAllTaskDetails();
+
+    // ? 修改任务的状态
+    
+    // 更新任务完成时间
+    @Update("UPDATE tasks t " +
+           "JOIN orders o ON t.task_id = o.task_id " +
+           "SET t.deadline = o.confirmed_at " +
+           "WHERE o.order_id = #{orderID}")
+    int updateTaskDeadline(@Param("orderID") int orderID);
+
+    
 
     
 

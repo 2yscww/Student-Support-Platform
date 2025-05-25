@@ -13,6 +13,7 @@ import team.work.platform.common.Response;
 import team.work.platform.common.JwtAuthenticationFilter;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderConfirmDTO;
 import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.mapper.OrdersMapper;
@@ -235,39 +236,72 @@ public class OrdersServiceImpl implements OrdersService {
         }
 
         // 更新任务状态
-        int taskResult = ordersMapper.updateTaskStatus(TaskStatus.COMPLETED.name(), submitDTO.getOrderId().intValue());
+        int taskResult = ordersMapper.updateTaskStatus(TaskStatus.SUBMITTED.name(), submitDTO.getOrderId().intValue());
         if (taskResult <= 0) {
             return Response.Fail(null, "更新任务状态失败");
         }
 
         return Response.Success(null, "任务结果提交成功");
     }
+
+    // TODO 需要完善任务表中的确认时间
+
+    // ? 发布者确认任务完成
+    @Override
+    @Transactional
+    public Response<Object> confirmOrder(OrderConfirmDTO orderConfirmDTO) {
+        // 获取当前登录用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "未获取到用户信息");
+        }
+
+        // 查询订单信息
+        Orders order = ordersMapper.selectOrderById(orderConfirmDTO.getOrderId().intValue());
+        if (order == null) {
+            return Response.Fail(null, "订单不存在");
+        }
+
+        // 验证当前用户是否为发布者
+        if (!currentUserId.equals(order.getPosterId())) {
+            return Response.Fail(null, "只有发布者可以确认任务完成");
+        }
+
+        // 验证订单状态是否为已提交
+        if (order.getOrderStatus() != OrderStatus.SUBMITTED) {
+            return Response.Fail(null, "当前订单状态不允许确认完成");
+        }
+
+        try {
+            // 更新订单状态为已确认
+            int statusResult = ordersMapper.updateOrderStatus(OrderStatus.CONFIRMED.name(), orderConfirmDTO.getOrderId().intValue());
+            if (statusResult <= 0) {
+                throw new RuntimeException("更新订单状态失败");
+            }
+
+            // 更新确认时间
+            int timeResult = ordersMapper.updateConfirmedTime(orderConfirmDTO.getOrderId().intValue());
+            if (timeResult <= 0) {
+                throw new RuntimeException("更新确认时间失败");
+            }
+
+            // 更新任务状态为已完成
+            int taskResult = ordersMapper.updateTaskStatus(TaskStatus.COMPLETED.name(), orderConfirmDTO.getOrderId().intValue());
+            if (taskResult <= 0) {
+                throw new RuntimeException("更新任务状态失败");
+            }
+
+            // 更新任务的deadline为订单的confirmed_at
+            int deadlineResult = tasksMapper.updateTaskDeadline(orderConfirmDTO.getOrderId().intValue());
+            if (deadlineResult <= 0) {
+                throw new RuntimeException("更新任务完成时间失败");
+            }
+
+            return Response.Success(null, "任务已确认完成");
+        } catch (Exception e) {
+            // 由于使用了@Transactional注解，发生异常时会自动回滚
+            return Response.Fail(null, e.getMessage());
+        }
+    }
 }
 
-// @Override
-// public Response<Object> RegisterUser(RegisterUserDTO registerUserDTO) {
-
-// if (userValidator.isUserNameExist(registerUserDTO.getUsername())) {
-// return Response.Fail(null, "用户名重复!");
-// }
-
-// if (userValidator.isEmailExist(registerUserDTO.getEmail())) {
-// return Response.Fail(null, "此邮箱已注册过账户!");
-// }
-
-// if
-// (!userValidator.isPasswordEqual(registerUserDTO.getPassword(),registerUserDTO.getConfirmPassword()))
-// {
-// return Response.Fail(null, "两次密码不一致!");
-// }
-
-// String encodePassword =
-// passwordEncoder.encode(registerUserDTO.getPassword());
-
-// usersmapper.createUser(registerUserDTO.getUsername(),
-// registerUserDTO.getEmail(),
-// encodePassword
-// );
-
-// return Response.Success(null, "注册成功!");
-// }

@@ -6,6 +6,7 @@ import java.util.function.ToDoubleBiFunction;
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderConfirmDTO;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.dto.OrderSubmitDTO;
@@ -31,5 +32,8 @@ public interface OrdersService {
 
     // ? 提交任务结果
     Response<Object> submitOrder(OrderSubmitDTO submitDTO);
+
+    // ? 发布者确认任务完成
+    Response<Object> confirmOrder(OrderConfirmDTO orderConfirmDTO);
 
 }

@@ -13,6 +13,7 @@ import team.work.platform.dto.OrderApplyDTO;
 import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.service.OrdersService;
+import team.work.platform.dto.OrderConfirmDTO;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -63,5 +64,11 @@ public class OrderController {
     @PostMapping("/submit")
     public Response<Object> submitOrder(@RequestBody OrderSubmitDTO submitDTO) {
         return ordersService.submitOrder(submitDTO);
+    }
+
+    // ? 发布者确认任务完成
+    @PostMapping("/confirm")
+    public Response<Object> confirmOrder(@RequestBody OrderConfirmDTO orderConfirmDTO) {
+        return ordersService.confirmOrder(orderConfirmDTO);
     }
 }
