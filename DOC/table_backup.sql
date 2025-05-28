@@ -83,7 +83,6 @@ CREATE TABLE orders (
 -- UNPAID	尚未支付
 -- PAID	发布者已支付报酬
 
-
 -- ! 成果提交表
 
 CREATE TABLE order_submissions (
@@ -121,10 +120,13 @@ CREATE TABLE reports (
     reported_task_id BIGINT,
     reported_review_id BIGINT,
     reason TEXT NOT NULL,
+    report_type ENUM('USER', 'TASK', 'REVIEW') NOT NULL,
     status ENUM(
         'PENDING',
+        'INVESTIGATING',
         'RESOLVED',
-        'REJECTED'
+        'REJECTED',
+        'INVALID'
     ) DEFAULT 'PENDING',
     reported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_reporter FOREIGN KEY (reporter_id) REFERENCES users (user_id),
@@ -140,5 +142,22 @@ CREATE TABLE reports (
 -- reported_task_id	BIGINT (可空)	外键，被举报的任务 ID（如果举报的是任务）
 -- reported_review_id	BIGINT (可空)	外键，被举报的评论 ID（如果举报的是评价）
 -- reason	TEXT	举报理由
--- status	ENUM	举报处理状态（待处理 / 已处理 / 拒绝等）
+-- report_type 举报类型
+-- status	ENUM	举报处理状态
 -- reported_at	DATETIME	举报时间
+
+-- ? 举报状态枚举
+
+-- 待处理
+-- 调查中
+-- 已处理
+-- 已驳回
+-- 无效举报
+
+-- ? 举报类型枚举
+
+-- USER
+
+-- TASK
+
+-- REVIEW
