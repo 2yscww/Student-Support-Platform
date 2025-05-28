@@ -25,7 +25,7 @@ import team.work.platform.model.OrderSubmission;
 import team.work.platform.model.enumValue.OrderStatus;
 import team.work.platform.model.enumValue.TaskStatus;
 import team.work.platform.service.OrdersService;
-import team.work.platform.util.UserValidator;
+import team.work.platform.utils.UserValidator;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {

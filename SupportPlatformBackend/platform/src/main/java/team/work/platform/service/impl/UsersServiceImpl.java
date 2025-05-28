@@ -12,9 +12,9 @@ import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
+import team.work.platform.utils.JwtUtil;
+import team.work.platform.utils.UserValidator;
 import team.work.platform.common.Response;
-import team.work.platform.util.UserValidator;
-import team.work.platform.util.JwtUtil;
 
 @Service
 public class UsersServiceImpl implements UsersService {

@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import team.work.platform.common.Response;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.mapper.UsersMapper;
-import team.work.platform.util.UserValidator;
+import team.work.platform.utils.UserValidator;
 
 @ExtendWith(MockitoExtension.class) // 告诉Junit用Mockito的能力
 public class UsersServiceImplTest {

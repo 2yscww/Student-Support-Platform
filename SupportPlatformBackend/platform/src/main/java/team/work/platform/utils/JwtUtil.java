@@ -1,4 +1,4 @@
-package team.work.platform.util;
+package team.work.platform.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

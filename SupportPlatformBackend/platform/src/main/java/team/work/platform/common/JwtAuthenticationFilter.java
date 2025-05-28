@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
-import team.work.platform.util.JwtUtil;
+import team.work.platform.utils.JwtUtil;
 
 import java.io.IOException;
 import java.util.Collections;

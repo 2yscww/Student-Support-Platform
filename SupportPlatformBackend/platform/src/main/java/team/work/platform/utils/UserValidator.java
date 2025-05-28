@@ -1,4 +1,4 @@
-package team.work.platform.util;
+package team.work.platform.utils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
