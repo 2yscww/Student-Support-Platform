@@ -15,6 +15,10 @@ public interface ReviewMapper {
             "VALUES(#{taskId}, #{reviewerId}, #{revieweeId}, #{rating}, #{content})")
     int createReview(Reviews review);
 
+    // 根据ID查询评价
+    @Select("SELECT * FROM reviews WHERE review_id = #{reviewId}")
+    Reviews selectByReviewId(@Param("reviewId") Long reviewId);
+
     // 检查是否已经评价过
     @Select("SELECT COUNT(*) FROM reviews " +
             "WHERE task_id = #{taskId} AND reviewer_id = #{reviewerId}")

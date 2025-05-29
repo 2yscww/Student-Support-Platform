@@ -25,6 +25,10 @@ public interface TaskMapper extends BaseMapper<Tasks> {
     @Select("SELECT * FROM tasks")
     List<Tasks> selectAllTasks();
 
+    // 根据ID查询任务
+    @Select("SELECT * FROM tasks WHERE task_id = #{taskId}")
+    Tasks selectByTaskId(@Param("taskId") Long taskId);
+
     // 创建任务
     @Insert("INSERT INTO tasks(title,description,reward) VALUES(#{title},#{description},#{reward})")
     int createdTask(Tasks task);
