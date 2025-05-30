@@ -58,15 +58,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // 如果成功获取用户邮箱且安全上下文中没有认证信息，则进行认证
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            Users user = usersMapper.selectByUserEmail(userEmail);
             
-            if (user != null && jwtUtil.validateToken(jwt, userEmail)) {
+            // Users user = usersMapper.selectByUserEmail(userEmail);
+            
+            if (jwtUtil.validateToken(jwt, userEmail)) {
+
+                String role = jwtUtil.getUserRoleFromToken(jwt);
+                Long userId = jwtUtil.getUserIdFromToken(jwt);
+
                 List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + user.getRole()));
-                
-                // 创建包含用户ID的details
+                        new SimpleGrantedAuthority("ROLE_" + role));
+
                 Map<String, Object> details = new HashMap<>();
-                details.put("userId", user.getUserID());
+                details.put("userId", userId);
                 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userEmail, null, authorities);

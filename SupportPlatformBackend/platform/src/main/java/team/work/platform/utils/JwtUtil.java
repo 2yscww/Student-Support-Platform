@@ -37,6 +37,15 @@ public class JwtUtil {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
+    // 提取token中的用户角色
+    public String getUserRoleFromToken(String token) {
+        return getAllClaimsFromToken(token).get("role", String.class);
+    }
+
+    public Long getUserIdFromToken(String token) {
+    return getAllClaimsFromToken(token).get("userId", Long.class);
+}
+
     // 从token中提取过期时间
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -87,4 +96,7 @@ public class JwtUtil {
         final String extractedUserEmail = getUserEmailFromToken(token);
         return (extractedUserEmail.equals(email) && !isTokenExpired(token));
     }
+
+    
+
 }
