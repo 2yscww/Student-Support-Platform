@@ -1,6 +1,5 @@
 package team.work.platform.controller;
 
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team.work.platform.common.Response;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderCancelDTO;
 import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.service.OrdersService;
@@ -49,10 +49,9 @@ public class OrderController {
     }
     
     // ? 查询用户发布的任务
-    @PostMapping("/my_published")
-    //TODO 修改回GET方法
-    public Response<List<TaskDetailsDTO>> getMyPublishedOrders(@RequestBody OrderDTO orderDTO) {
-        return ordersService.getOrdersByPosterId(orderDTO);
+    @GetMapping("/my_published")
+    public Response<List<TaskDetailsDTO>> getMyPublishedOrders() {
+        return ordersService.getOrdersByPosterId(new OrderDTO());
     }
     
     // ? 申请接单
@@ -71,5 +70,11 @@ public class OrderController {
     @PostMapping("/confirm")
     public Response<Object> confirmOrder(@RequestBody OrderConfirmDTO orderConfirmDTO) {
         return ordersService.confirmOrder(orderConfirmDTO);
+    }
+
+    // ? 发布者取消任务
+    @PostMapping("/cancel")
+    public Response<Object> cancelOrder(@RequestBody OrderCancelDTO orderCancelDTO) {
+        return ordersService.cancelOrder(orderCancelDTO);
     }
 }

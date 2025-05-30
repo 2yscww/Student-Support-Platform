@@ -13,6 +13,7 @@ import team.work.platform.common.Response;
 import team.work.platform.common.JwtAuthenticationFilter;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderApplyDTO;
+import team.work.platform.dto.OrderCancelDTO;
 import team.work.platform.dto.OrderConfirmDTO;
 import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
@@ -60,11 +61,19 @@ public class OrdersServiceImpl implements OrdersService {
 
     // ? 创建任务和订单
     @Override
+    @Transactional
     public Response<Object> CreateTaskAndOrder(OrderDTO orderDTO) {
 
+
+        // * 获取当前登录用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "未获取到用户信息");
+        }
+
         // * 检查用户ID是否存在
-        if (!userValidator.isUserIDExist(orderDTO.getPosterId())) {
-            return Response.Fail(null, "用户数据非法!");
+        if (!userValidator.isUserIDExist(currentUserId)) {
+            return Response.Fail(null, "用户不存在!");
         }
 
         // * 创建任务对象
@@ -95,7 +104,7 @@ public class OrdersServiceImpl implements OrdersService {
         // }
 
         // * 插入订单表
-        ordersMapper.createOrder(taskId, orderDTO.getPosterId());
+        ordersMapper.createOrder(taskId, currentUserId);
 
         return Response.Success(null, "任务创建成功!");
     }
@@ -109,14 +118,15 @@ public class OrdersServiceImpl implements OrdersService {
     // ? 查询用户发布的任务
     @Override
     public Response<List<TaskDetailsDTO>> getOrdersByPosterId(OrderDTO orderDTO) {
-        // 验证用户ID是否存在
-        Long posterId = orderDTO.getPosterId();
-        if (!userValidator.isUserIDExist(posterId)) {
-            return Response.Fail(null, "用户不存在!");
+        // 获取当前登录用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "未获取到用户信息");
         }
-        
+
+
         // 查询该用户发布的任务详情
-        List<TaskDetailsDTO> ordersList = ordersMapper.selectOrdersByPosterId(posterId);
+        List<TaskDetailsDTO> ordersList = ordersMapper.selectOrdersByPosterId(currentUserId);
         
         if (ordersList != null && !ordersList.isEmpty()) {
             return Response.Success(ordersList, "查询成功");
@@ -298,6 +308,55 @@ public class OrdersServiceImpl implements OrdersService {
             }
 
             return Response.Success(null, "任务已确认完成");
+        } catch (Exception e) {
+            // 由于使用了@Transactional注解，发生异常时会自动回滚
+            return Response.Fail(null, e.getMessage());
+        }
+    }
+
+    // ? 发布者取消任务
+    @Override
+    @Transactional
+    public Response<Object> cancelOrder(OrderCancelDTO orderCancelDTO) {
+        // 获取当前登录用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "未获取到用户信息");
+        }
+
+        // 查询订单信息
+        Orders order = ordersMapper.selectOrderById(orderCancelDTO.getOrderId().intValue());
+        if (order == null) {
+            return Response.Fail(null, "订单不存在");
+        }
+
+        // 验证当前用户是否为发布者
+        if (!currentUserId.equals(order.getPosterId())) {
+            return Response.Fail(null, "只有发布者可以取消任务");
+        }
+
+        // 验证订单状态是否允许取消
+        if (order.getOrderStatus() == OrderStatus.CONFIRMED || 
+            order.getOrderStatus() == OrderStatus.CANCELLED) {
+            return Response.Fail(null, "当前订单状态不允许取消");
+        }
+
+        try {
+            // 更新订单状态为已取消
+            int statusResult = ordersMapper.updateOrderStatus(OrderStatus.CANCELLED.name(), 
+                orderCancelDTO.getOrderId().intValue());
+            if (statusResult <= 0) {
+                throw new RuntimeException("更新订单状态失败");
+            }
+
+            // 更新任务状态为已取消
+            int taskResult = ordersMapper.updateTaskStatus(TaskStatus.CANCELLED.name(), 
+                orderCancelDTO.getOrderId().intValue());
+            if (taskResult <= 0) {
+                throw new RuntimeException("更新任务状态失败");
+            }
+
+            return Response.Success(null, "任务已取消");
         } catch (Exception e) {
             // 由于使用了@Transactional注解，发生异常时会自动回滚
             return Response.Fail(null, e.getMessage());

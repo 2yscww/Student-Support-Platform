@@ -13,7 +13,6 @@ public class OrderDTO {
    private BigDecimal reward;
 
    // 接单信息
-   private Long posterId;
    private Long receiverId;
 
 }
