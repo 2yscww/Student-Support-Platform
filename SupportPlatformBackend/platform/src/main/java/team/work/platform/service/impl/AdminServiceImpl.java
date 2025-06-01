@@ -1,6 +1,7 @@
 package team.work.platform.service.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import team.work.platform.common.Response;
 import team.work.platform.dto.AdminLoginDTO;
+import team.work.platform.dto.LoginUserDTO;
+import team.work.platform.dto.UserDetailsDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.model.enumValue.Role;
@@ -29,7 +32,7 @@ public class AdminServiceImpl implements AdminService {
     private JwtUtil jwtUtil;
 
     @Override
-    public Response<Object> adminLogin(AdminLoginDTO adminLoginDTO) {
+    public Response<Object> adminLogin(LoginUserDTO adminLoginDTO) {
         // 1. 验证邮箱是否存在
         if (!userValidator.isEmailExist(adminLoginDTO.getEmail())) {
             return Response.Fail(null, "邮箱或密码错误!");
@@ -60,5 +63,19 @@ public class AdminServiceImpl implements AdminService {
         responseData.put("role", user.getRole().toString());
 
         return Response.Success(responseData, "登录成功!");
+    }
+
+    @Override
+    public Response<List<UserDetailsDTO>> getAllUsers() {
+        try {
+            List<UserDetailsDTO> users = usersMapper.getAllUserDetails();
+            if (users != null && !users.isEmpty()) {
+                return Response.Success(users, "查询成功");
+            } else {
+                return Response.Success(null, "暂无用户数据");
+            }
+        } catch (Exception e) {
+            return Response.Fail(null, "查询用户列表失败：" + e.getMessage());
+        }
     }
 } 

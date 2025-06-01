@@ -17,6 +17,7 @@ import team.work.platform.dto.OrderCancelDTO;
 import team.work.platform.dto.OrderConfirmDTO;
 import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
+import team.work.platform.dto.OrderStatusUpdateDTO;
 import team.work.platform.mapper.OrdersMapper;
 import team.work.platform.mapper.TaskMapper;
 import team.work.platform.mapper.OrderSubmissionMapper;
@@ -360,6 +361,83 @@ public class OrdersServiceImpl implements OrdersService {
         } catch (Exception e) {
             // 由于使用了@Transactional注解，发生异常时会自动回滚
             return Response.Fail(null, e.getMessage());
+        }
+    }
+
+    // ? 管理员删除订单
+    @Override
+    @Transactional
+    public Response<Object> adminDeleteOrderById(Long orderId) {
+        try {
+            // 查询订单信息
+            Orders order = ordersMapper.selectOrderById(orderId.intValue());
+            if (order == null) {
+                return Response.Fail(null, "订单不存在");
+            }
+
+            // 删除订单
+            int orderResult = ordersMapper.deleteOrder(orderId.intValue());
+            if (orderResult <= 0) {
+                throw new RuntimeException("删除订单失败");
+            }
+
+            // 删除关联的任务
+            int taskResult = tasksMapper.deleteTask(order.getTaskId().intValue());
+            if (taskResult <= 0) {
+                throw new RuntimeException("删除任务失败");
+            }
+
+            return Response.Success(null, "订单和关联任务已成功删除");
+        } catch (Exception e) {
+            // 由于使用了@Transactional注解，发生异常时会自动回滚
+            return Response.Fail(null, e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO) {
+        try {
+            // 查询订单信息
+            Orders order = ordersMapper.selectOrderById(updateDTO.getOrderId().intValue());
+            if (order == null) {
+                return Response.Fail(null, "订单不存在");
+            }
+
+            // 更新订单状态
+            if (updateDTO.getOrderStatus() != null) {
+                int orderStatusResult = ordersMapper.updateOrderStatus(
+                    updateDTO.getOrderStatus(),
+                    updateDTO.getOrderId().intValue()
+                );
+                if (orderStatusResult <= 0) {
+                    throw new RuntimeException("更新订单状态失败");
+                }
+            }
+
+            // 更新任务状态
+            if (updateDTO.getTaskStatus() != null) {
+                int taskStatusResult = ordersMapper.updateTaskStatus(
+                    updateDTO.getTaskStatus(),
+                    updateDTO.getOrderId().intValue()
+                );
+                if (taskStatusResult <= 0) {
+                    throw new RuntimeException("更新任务状态失败");
+                }
+            }
+
+            // 如果状态更新为CONFIRMED，更新确认时间
+            if ("CONFIRMED".equals(updateDTO.getOrderStatus())) {
+                int timeResult = ordersMapper.updateConfirmedTime(updateDTO.getOrderId().intValue());
+                if (timeResult <= 0) {
+                    throw new RuntimeException("更新确认时间失败");
+                }
+            }
+
+            return Response.Success(null, "状态更新成功" + 
+                (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
+        } catch (Exception e) {
+            return Response.Fail(null, "状态更新失败：" + e.getMessage());
         }
     }
 }

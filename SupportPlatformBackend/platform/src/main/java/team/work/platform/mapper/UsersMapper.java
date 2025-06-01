@@ -2,11 +2,14 @@ package team.work.platform.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import team.work.platform.model.Users;
+import team.work.platform.dto.UserDetailsDTO;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 
 
@@ -49,4 +52,17 @@ public interface UsersMapper extends BaseMapper<Users> {
     // role ENUM('USER', 'ADMIN') DEFAULT 'USER',
     // created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     // );
+
+    // ? 获取所有用户详细信息
+    @Select("SELECT " +
+           "u.user_id as userId, " +
+           "u.username, " +
+           "u.email, " +
+           "u.credit_score as creditScore, " +
+           "u.status, " +
+           "u.role, " +
+           "u.created_at as createdAt " +
+           "FROM users u " +
+           "ORDER BY u.created_at DESC")
+    List<UserDetailsDTO> getAllUserDetails();
 }

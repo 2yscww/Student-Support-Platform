@@ -11,6 +11,7 @@ import team.work.platform.dto.OrderConfirmDTO;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.dto.OrderSubmitDTO;
+import team.work.platform.dto.OrderStatusUpdateDTO;
 import team.work.platform.model.Orders;
 
 public interface OrdersService {
@@ -39,5 +40,11 @@ public interface OrdersService {
 
     // ? 发布者取消任务
     Response<Object> cancelOrder(OrderCancelDTO orderCancelDTO);
+
+    // ? 管理员删除订单
+    Response<Object> adminDeleteOrderById(Long orderId);
+
+    // ? 管理员更新订单和任务状态
+    Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO);
 
 }
