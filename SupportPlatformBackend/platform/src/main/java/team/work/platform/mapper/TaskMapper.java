@@ -50,11 +50,9 @@ public interface TaskMapper extends BaseMapper<Tasks> {
            "WHERE o.order_id = #{orderID}")
     int updateTaskDeadline(@Param("orderID") int orderID);
 
-    
+    @Select("SELECT title FROM tasks WHERE task_id = #{taskId}")
+    String getTaskTitleById(Long taskId);
 
-    
-
-    
 }
 
 // delete from tasks where task_id = 2;

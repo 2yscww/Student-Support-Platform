@@ -14,6 +14,7 @@ import team.work.platform.dto.OrderSubmitDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.service.OrdersService;
 import team.work.platform.dto.OrderConfirmDTO;
+import team.work.platform.dto.OrderStatusUpdateDTO;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,5 +77,22 @@ public class OrderController {
     @PostMapping("/cancel")
     public Response<Object> cancelOrder(@RequestBody OrderCancelDTO orderCancelDTO) {
         return ordersService.cancelOrder(orderCancelDTO);
+    }
+
+    // ? 修改未接单任务信息
+    @PostMapping("/update")
+    public Response<Object> updateOrder(@RequestBody OrderStatusUpdateDTO updateDTO) {
+        return ordersService.updateOrder(updateDTO);
+    }
+    // ? 查询用户自己接受的任务
+    @GetMapping("/my-received")
+    public Response<Object> getMyReceivedOrders() {
+        return ordersService.getMyReceivedOrders();
+    }
+
+    // ? 查看任务详情
+    @PostMapping("/detail")
+    public Response<Object> getOrderDetail(@RequestBody OrderConfirmDTO orderConfirmDTO) {
+        return ordersService.getOrderDetail(orderConfirmDTO.getOrderId());
     }
 }

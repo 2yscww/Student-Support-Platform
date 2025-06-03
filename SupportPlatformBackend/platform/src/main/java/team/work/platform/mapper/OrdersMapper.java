@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Result;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -39,8 +41,28 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     List<TaskDetailsDTO> selectOrdersByPosterId(@Param("posterId") Long posterId);
 
     // 根据接单人查询订单
-    @Select("SELECT * FROM orders WHERE receiver_id = #{receiverID}")
-    List<Orders> selectOrdersByReceiverId(@Param("receiverID") int receiverID);
+    @Select("SELECT o.order_id, t.task_id, t.title, t.description, t.reward, t.status as task_status, " +
+            "u1.username as poster_username, u2.username as receiver_username, " +
+            "o.order_status, o.payment_status " +
+            "FROM orders o " +
+            "LEFT JOIN tasks t ON o.task_id = t.task_id " +
+            "LEFT JOIN users u1 ON t.publisher_id = u1.user_id " +
+            "LEFT JOIN users u2 ON o.receiver_id = u2.user_id " +
+            "WHERE o.receiver_id = #{receiverId} " +
+            "ORDER BY o.created_at DESC")
+    @Results({
+        @Result(property = "orderId", column = "order_id"),
+        @Result(property = "taskId", column = "task_id"),
+        @Result(property = "title", column = "title"),
+        @Result(property = "description", column = "description"),
+        @Result(property = "reward", column = "reward"),
+        @Result(property = "taskStatus", column = "task_status"),
+        @Result(property = "posterUsername", column = "poster_username"),
+        @Result(property = "receiverUsername", column = "receiver_username"),
+        @Result(property = "orderStatus", column = "order_status"),
+        @Result(property = "paymentStatus", column = "payment_status")
+    })
+    List<TaskDetailsDTO> selectOrdersByReceiverId(@Param("receiverId") int receiverId);
 
     // ? 更新订单状态
     @Update("UPDATE orders SET order_status = #{orderStatus} WHERE order_id = #{orderID}")
@@ -68,6 +90,51 @@ public interface OrdersMapper extends BaseMapper<Orders> {
            "SET t.status = #{taskStatus} " +
            "WHERE o.order_id = #{orderID}")
     int updateTaskStatus(@Param("taskStatus") String taskStatus, @Param("orderID") int orderID);
+
+    @Select("SELECT o.*, t.title as task_title, t.description as task_description, " +
+            "t.price as task_price, t.deadline as task_deadline, " +
+            "u.username as publisher_username " +
+            "FROM orders o " +
+            "LEFT JOIN tasks t ON o.task_id = t.task_id " +
+            "LEFT JOIN users u ON t.publisher_id = u.user_id " +
+            "WHERE o.receiver_id = #{receiverId} " +
+            "ORDER BY o.created_at DESC")
+    @Results({
+        @Result(property = "orderId", column = "order_id"),
+        @Result(property = "taskId", column = "task_id"),
+        @Result(property = "receiverId", column = "receiver_id"),
+        @Result(property = "status", column = "status"),
+        @Result(property = "createdAt", column = "created_at"),
+        @Result(property = "completedAt", column = "completed_at"),
+        @Result(property = "taskTitle", column = "task_title"),
+        @Result(property = "taskDescription", column = "task_description"),
+        @Result(property = "taskPrice", column = "task_price"),
+        @Result(property = "taskDeadline", column = "task_deadline"),
+        @Result(property = "publisherUsername", column = "publisher_username")
+    })
+    List<Orders> findByReceiverId(Long receiverId);
+
+    @Select("SELECT o.order_id, t.task_id, t.title, t.description, t.reward, t.status as task_status, " +
+            "u1.username as poster_username, u2.username as receiver_username, " +
+            "o.order_status, o.payment_status " +
+            "FROM orders o " +
+            "LEFT JOIN tasks t ON o.task_id = t.task_id " +
+            "LEFT JOIN users u1 ON t.publisher_id = u1.user_id " +
+            "LEFT JOIN users u2 ON o.receiver_id = u2.user_id " +
+            "WHERE o.order_id = #{orderId}")
+    @Results({
+        @Result(property = "orderId", column = "order_id"),
+        @Result(property = "taskId", column = "task_id"),
+        @Result(property = "title", column = "title"),
+        @Result(property = "description", column = "description"),
+        @Result(property = "reward", column = "reward"),
+        @Result(property = "taskStatus", column = "task_status"),
+        @Result(property = "posterUsername", column = "poster_username"),
+        @Result(property = "receiverUsername", column = "receiver_username"),
+        @Result(property = "orderStatus", column = "order_status"),
+        @Result(property = "paymentStatus", column = "payment_status")
+    })
+    TaskDetailsDTO getOrderDetail(@Param("orderId") Long orderId);
 
 }
 

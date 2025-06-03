@@ -5,4 +5,5 @@ import team.work.platform.dto.ReportSubmitDTO;
 
 public interface ReportService {
     Response<Object> submitReport(ReportSubmitDTO reportSubmitDTO);
+    Response<Object> getMyReports();
 } 

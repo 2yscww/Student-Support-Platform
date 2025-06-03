@@ -1,6 +1,9 @@
 package team.work.platform.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import team.work.platform.common.Response;
 import team.work.platform.common.JwtAuthenticationFilter;
 import team.work.platform.dto.ReportSubmitDTO;
+import team.work.platform.dto.ReportDetailsDTO;
 import team.work.platform.mapper.ReportsMapper;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.mapper.TaskMapper;
@@ -101,6 +105,39 @@ public class ReportServiceImpl implements ReportService {
             return Response.Success(null, "举报提交成功!");
         } catch (Exception e) {
             return Response.Error(null, "举报提交失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<Object> getMyReports() {
+        // 获取当前用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录!");
+        }
+
+        try {
+            // 获取用户的所有举报记录
+            List<Reports> reports = reportsMapper.findByReporterId(currentUserId);
+            
+            // 将Reports转换为ReportDetailsDTO
+            List<ReportDetailsDTO> reportDetailsList = reports.stream().map(report -> {
+                ReportDetailsDTO dto = new ReportDetailsDTO();
+                dto.setReportId(report.getReportId());
+                dto.setReportedUserId(report.getReportedUserId());
+                dto.setReportedUsername(report.getReportedUsername());
+                dto.setReportedTaskId(report.getReportedTaskId());
+                dto.setReportedReviewId(report.getReportedReviewId());
+                dto.setReason(report.getReason());
+                dto.setReportType(report.getReportType());
+                dto.setStatus(report.getStatus());
+                dto.setReportedAt(report.getReportedAt());
+                return dto;
+            }).collect(Collectors.toList());
+
+            return Response.Success(reportDetailsList, "获取举报记录成功!");
+        } catch (Exception e) {
+            return Response.Error(null, "获取举报记录失败: " + e.getMessage());
         }
     }
 } 

@@ -47,4 +47,11 @@ public interface OrdersService {
     // ? 管理员更新订单和任务状态
     Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO);
 
+    // ? 修改未接单任务信息
+    Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO);
+
+    Response<Object> getMyReceivedOrders();
+
+    // ? 查看任务详情
+    Response<Object> getOrderDetail(Long orderId);
 }

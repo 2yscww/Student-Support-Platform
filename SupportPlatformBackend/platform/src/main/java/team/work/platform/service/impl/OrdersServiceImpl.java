@@ -3,6 +3,7 @@ package team.work.platform.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.config.Task;
@@ -438,6 +439,118 @@ public class OrdersServiceImpl implements OrdersService {
                 (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
         } catch (Exception e) {
             return Response.Fail(null, "状态更新失败：" + e.getMessage());
+        }
+    }
+
+    // ? 修改未接单任务信息
+    @Override
+    @Transactional
+    public Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO) {
+        try {
+            // 获取当前登录用户ID
+            Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+            if (currentUserId == null) {
+                return Response.Fail(null, "未获取到用户信息");
+            }
+
+            // 查询订单信息
+            Orders order = ordersMapper.selectOrderById(updateDTO.getOrderId().intValue());
+            if (order == null) {
+                return Response.Fail(null, "订单不存在");
+            }
+
+            // 验证当前用户是否为发布者
+            if (!currentUserId.equals(order.getPosterId())) {
+                return Response.Fail(null, "只有发布者可以修改任务信息");
+            }
+
+            // 查询任务信息
+            Tasks task = tasksMapper.selectById(order.getTaskId());
+            if (task == null) {
+                return Response.Fail(null, "任务不存在");
+            }
+
+            // 验证任务状态是否为待接单
+            if (task.getStatus() != TaskStatus.PENDING) {
+                return Response.Fail(null, "只能修改未接单的任务");
+            }
+
+            // 更新任务信息
+            if (updateDTO.getTitle() != null) {
+                task.setTitle(updateDTO.getTitle());
+            }
+            if (updateDTO.getDescription() != null) {
+                task.setDescription(updateDTO.getDescription());
+            }
+            if (updateDTO.getReward() != null) {
+                task.setReward(updateDTO.getReward());
+            }
+
+            // 保存更新
+            int result = tasksMapper.updateById(task);
+            if (result <= 0) {
+                throw new RuntimeException("更新任务信息失败");
+            }
+
+            return Response.Success(null, "任务信息更新成功" + 
+                (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
+        } catch (Exception e) {
+            return Response.Fail(null, "更新失败：" + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<Object> getMyReceivedOrders() {
+        // 获取当前用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录!");
+        }
+
+        try {
+            // 获取用户接受的所有任务详情
+            List<TaskDetailsDTO> taskDetailsList = ordersMapper.selectOrdersByReceiverId(currentUserId.intValue());
+            
+            if (taskDetailsList != null && !taskDetailsList.isEmpty()) {
+                return Response.Success(taskDetailsList, "获取已接受的任务列表成功!");
+            } else {
+                return Response.Success(new ArrayList<>(), "暂无接受的任务");
+            }
+        } catch (Exception e) {
+            return Response.Error(null, "获取已接受的任务列表失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<Object> getOrderDetail(Long orderId) {
+        // 获取当前用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录!");
+        }
+
+        try {
+            // 获取任务详情
+            TaskDetailsDTO taskDetails = ordersMapper.getOrderDetail(orderId);
+            
+            if (taskDetails == null) {
+                return Response.Fail(null, "任务不存在!");
+            }
+
+            // 验证当前用户是否有权限查看该任务
+            // 只有任务的发布者或接收者可以查看详情
+            Orders order = ordersMapper.selectById(orderId);
+            if (order == null) {
+                return Response.Fail(null, "订单不存在!");
+            }
+
+            if (!currentUserId.equals(order.getPosterId()) && !currentUserId.equals(order.getReceiverId())) {
+                return Response.Fail(null, "您没有权限查看该任务详情!");
+            }
+
+            return Response.Success(taskDetails, "获取任务详情成功!");
+        } catch (Exception e) {
+            return Response.Error(null, "获取任务详情失败: " + e.getMessage());
         }
     }
 }
