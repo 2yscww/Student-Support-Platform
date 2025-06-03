@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import team.work.platform.common.Response;
 import team.work.platform.dto.AdminLoginDTO;
@@ -17,6 +19,9 @@ import team.work.platform.dto.OrderCancelDTO;
 import team.work.platform.dto.OrderStatusUpdateDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.dto.UserDetailsDTO;
+import team.work.platform.dto.UserStatusDTO;
+import team.work.platform.dto.ReportListDTO;
+import team.work.platform.model.enumValue.ReportStatus;
 import team.work.platform.service.AdminService;
 import team.work.platform.service.OrdersService;
 
@@ -71,5 +76,35 @@ public class AdminController {
     @GetMapping("/users/list")
     public Response<List<UserDetailsDTO>> getAllUsers() {
         return adminService.getAllUsers();
+    }
+
+    // ? 冻结用户账号
+    @PostMapping("/users/freeze")
+    public Response<Object> freezeUser(@RequestBody UserStatusDTO userStatusDTO) {
+        return adminService.freezeUser(userStatusDTO);
+    }
+
+    // ? 解封用户账号
+    @PostMapping("/users/unfreeze")
+    public Response<Object> unfreezeUser(@RequestBody UserStatusDTO userStatusDTO) {
+        return adminService.unfreezeUser(userStatusDTO);
+    }
+
+    // ? 管理员查看所有举报列表
+    @GetMapping("/reports/list/all")
+    public Response<List<ReportListDTO>> getAllReports() {
+        return adminService.getReportList(null);
+    }
+
+    // ? 管理员查看待处理举报
+    @GetMapping("/reports/list/pending")
+    public Response<List<ReportListDTO>> getPendingReports() {
+        return adminService.getPendingReports();
+    }
+
+    // ? 管理员查看已处理举报（包括已处理、已驳回、无效等状态）
+    @GetMapping("/reports/list/resolved")
+    public Response<List<ReportListDTO>> getResolvedReports() {
+        return adminService.getResolvedReports();
     }
 } 

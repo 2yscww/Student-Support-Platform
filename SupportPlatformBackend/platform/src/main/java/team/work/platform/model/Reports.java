@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,4 +33,7 @@ public class Reports {
     private ReportStatus status = ReportStatus.PENDING;  // 举报状态，默认为待处理
 
     private LocalDateTime reportedAt;  // 举报时间
+
+    @TableField(exist = false)
+    private String reportedUsername;  // 被举报用户名（非数据库字段）
 } 
