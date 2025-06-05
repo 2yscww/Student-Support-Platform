@@ -19,6 +19,13 @@ public class TaskDetailsDTO {
 
     private String orderStatus;
     private String paymentStatus;
+    private String createdAt;
+
+    // 新增字段
+    private Long publisherId;
+    private Long receiverId;
+    private String deadline;
+    private String confirmedAt;
 
     // Getter & Setter 略
 }

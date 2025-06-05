@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -65,4 +66,8 @@ public interface UsersMapper extends BaseMapper<Users> {
            "FROM users u " +
            "ORDER BY u.created_at DESC")
     List<UserDetailsDTO> getAllUserDetails();
+
+    // 修改用户密码
+    @Update("UPDATE users SET password = #{newPassword} WHERE user_id = #{userId}")
+    int updatePassword(@Param("userId") Long userId, @Param("newPassword") String newPassword);
 }

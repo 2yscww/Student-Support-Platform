@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team.work.platform.common.Response;
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.RegisterUserDTO;
+import team.work.platform.dto.PasswordUpdateDTO;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,7 +38,7 @@ public class UserController {
     //     return usersService.selectByUserEmail(email);
     // }
     
-    
+    // TODO 还有一个支付功能需要去做
     // ? 用户注册
     @PostMapping("/register")
     public Response<Object> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
@@ -51,6 +52,10 @@ public class UserController {
         return usersService.LoginUser(loginUserDTO);
         
     }
-    
 
+    // 修改密码
+    @PostMapping("/password/update")
+    public Response<Object> updatePassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        return usersService.updatePassword(passwordUpdateDTO);
+    }
 }

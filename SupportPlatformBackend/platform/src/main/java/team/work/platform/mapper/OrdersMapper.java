@@ -46,7 +46,7 @@ public interface OrdersMapper extends BaseMapper<Orders> {
             "o.order_status, o.payment_status " +
             "FROM orders o " +
             "LEFT JOIN tasks t ON o.task_id = t.task_id " +
-            "LEFT JOIN users u1 ON t.publisher_id = u1.user_id " +
+            "LEFT JOIN users u1 ON o.poster_id = u1.user_id " +
             "LEFT JOIN users u2 ON o.receiver_id = u2.user_id " +
             "WHERE o.receiver_id = #{receiverId} " +
             "ORDER BY o.created_at DESC")
@@ -114,25 +114,30 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     })
     List<Orders> findByReceiverId(Long receiverId);
 
-    @Select("SELECT o.order_id, t.task_id, t.title, t.description, t.reward, t.status as task_status, " +
-            "u1.username as poster_username, u2.username as receiver_username, " +
-            "o.order_status, o.payment_status " +
+    @Select("SELECT o.order_id, o.poster_id, o.receiver_id, o.order_status, o.payment_status, o.created_at, o.confirmed_at, " +
+            "t.task_id, t.title, t.description, t.reward, t.status as task_specific_status, t.deadline, " +
+            "u1.username as poster_username, u2.username as receiver_username " +
             "FROM orders o " +
-            "LEFT JOIN tasks t ON o.task_id = t.task_id " +
-            "LEFT JOIN users u1 ON t.publisher_id = u1.user_id " +
+            "INNER JOIN tasks t ON o.task_id = t.task_id " +
+            "INNER JOIN users u1 ON o.poster_id = u1.user_id " +
             "LEFT JOIN users u2 ON o.receiver_id = u2.user_id " +
             "WHERE o.order_id = #{orderId}")
     @Results({
         @Result(property = "orderId", column = "order_id"),
+        @Result(property = "orderStatus", column = "order_status"),
+        @Result(property = "paymentStatus", column = "payment_status"),
+        @Result(property = "createdAt", column = "created_at"),
         @Result(property = "taskId", column = "task_id"),
         @Result(property = "title", column = "title"),
         @Result(property = "description", column = "description"),
         @Result(property = "reward", column = "reward"),
-        @Result(property = "taskStatus", column = "task_status"),
+        @Result(property = "taskStatus", column = "task_specific_status"),
         @Result(property = "posterUsername", column = "poster_username"),
         @Result(property = "receiverUsername", column = "receiver_username"),
-        @Result(property = "orderStatus", column = "order_status"),
-        @Result(property = "paymentStatus", column = "payment_status")
+        @Result(property = "publisherId", column = "poster_id"),
+        @Result(property = "receiverId", column = "receiver_id"),
+        @Result(property = "deadline", column = "deadline"),
+        @Result(property = "confirmedAt", column = "confirmed_at")
     })
     TaskDetailsDTO getOrderDetail(@Param("orderId") Long orderId);
 

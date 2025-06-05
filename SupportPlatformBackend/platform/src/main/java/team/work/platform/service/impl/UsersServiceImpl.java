@@ -6,15 +6,18 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.RegisterUserDTO;
+import team.work.platform.dto.PasswordUpdateDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
 import team.work.platform.utils.JwtUtil;
 import team.work.platform.utils.UserValidator;
 import team.work.platform.common.Response;
+import team.work.platform.common.JwtAuthenticationFilter;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -64,7 +67,7 @@ public class UsersServiceImpl implements UsersService {
         responseData.put("token", token);
         responseData.put("userId", user.getUserID());
         responseData.put("username", user.getUsername());
-        // responseData.put("role", user.getRole().toString());
+        responseData.put("role", user.getRole().toString());
 
         return Response.Success(responseData, "注册成功!");
     }
@@ -74,10 +77,9 @@ public class UsersServiceImpl implements UsersService {
     public Response<Object> LoginUser(LoginUserDTO loginUserDTO) {
 
         if (!userValidator.isEmailExist(loginUserDTO.getEmail())) {
-            return Response.Fail(null, "邮箱未注册!");
+            // return Response.Fail(null, "邮箱未注册!");
 
-            // TODO 测试完成后应当采用此方式作为返回响应
-            // return Response.Fail(null, "邮箱或密码输入错误!");
+            return Response.Fail(null, "邮箱或密码输入错误!");
         }
 
         String userPassword = userValidator.findPasswordUseEmail(loginUserDTO.getEmail());
@@ -98,8 +100,56 @@ public class UsersServiceImpl implements UsersService {
         responseData.put("token", token);
         responseData.put("userId", user.getUserID());
         responseData.put("username", user.getUsername());
+        responseData.put("role", user.getRole().toString());
+        responseData.put("status", user.getStatus().toString());
 
         return Response.Success(responseData, "登录成功!");
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> updatePassword(PasswordUpdateDTO passwordUpdateDTO) {
+        // 获取当前用户ID
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录");
+        }
+
+        // 获取用户信息
+        Users user = usersmapper.selectById(currentUserId);
+        if (user == null) {
+            return Response.Fail(null, "用户不存在");
+        }
+
+        // 验证旧密码
+        if (!passwordEncoder.matches(passwordUpdateDTO.getOldPassword(), user.getPassword())) {
+            return Response.Fail(null, "旧密码错误");
+        }
+
+        // 验证新密码与确认密码是否一致
+        if (!passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getConfirmPassword())) {
+            return Response.Fail(null, "两次输入的新密码不一致");
+        }
+
+        // 验证新密码不能与旧密码相同
+        if (passwordUpdateDTO.getOldPassword().equals(passwordUpdateDTO.getNewPassword())) {
+            return Response.Fail(null, "新密码不能与旧密码相同");
+        }
+
+        try {
+            // 加密新密码
+            String encodedNewPassword = passwordEncoder.encode(passwordUpdateDTO.getNewPassword());
+            
+            // 更新密码
+            int result = usersmapper.updatePassword(currentUserId, encodedNewPassword);
+            if (result > 0) {
+                return Response.Success(null, "密码修改成功");
+            } else {
+                return Response.Fail(null, "密码修改失败");
+            }
+        } catch (Exception e) {
+            return Response.Error(null, "密码修改失败: " + e.getMessage());
+        }
     }
 
 }

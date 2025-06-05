@@ -21,9 +21,12 @@ import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.dto.UserDetailsDTO;
 import team.work.platform.dto.UserStatusDTO;
 import team.work.platform.dto.ReportListDTO;
+import team.work.platform.dto.ReviewListDTO;
+import team.work.platform.dto.ReviewDeleteDTO;
 import team.work.platform.model.enumValue.ReportStatus;
 import team.work.platform.service.AdminService;
 import team.work.platform.service.OrdersService;
+import team.work.platform.service.ReviewService;
 
 import java.util.List;
 
@@ -36,6 +39,9 @@ public class AdminController {
 
     @Autowired
     private OrdersService ordersService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     // ? 管理员登录
     @PostMapping("/login")
@@ -106,5 +112,17 @@ public class AdminController {
     @GetMapping("/reports/list/resolved")
     public Response<List<ReportListDTO>> getResolvedReports() {
         return adminService.getResolvedReports();
+    }
+
+    // 管理员查看所有评价列表
+    @GetMapping("/reviews/list")
+    public Response<List<ReviewListDTO>> getAllReviews() {
+        return reviewService.getAllReviews();
+    }
+
+    // 管理员删除指定评价
+    @DeleteMapping("/reviews/delete")
+    public Response<Object> deleteReview(@RequestBody ReviewDeleteDTO reviewDeleteDTO) {
+        return reviewService.deleteReview(reviewDeleteDTO.getReviewId());
     }
 } 

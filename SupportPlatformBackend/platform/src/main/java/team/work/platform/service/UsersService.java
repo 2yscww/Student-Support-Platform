@@ -3,7 +3,7 @@ package team.work.platform.service;
 import team.work.platform.common.Response;
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.RegisterUserDTO;
-
+import team.work.platform.dto.PasswordUpdateDTO;
 
 public interface UsersService {
 
@@ -25,7 +25,8 @@ public interface UsersService {
     Response<Object> RegisterUser(RegisterUserDTO registerUserDTO);
 
     // ? 用户登录
-
     Response<Object> LoginUser(LoginUserDTO loginUserDTO);
-    
+
+    // 修改密码
+    Response<Object> updatePassword(PasswordUpdateDTO passwordUpdateDTO);
 }
