@@ -10,13 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import team.work.platform.common.Response;
 import team.work.platform.common.JwtAuthenticationFilter;
-import team.work.platform.dto.ReportSubmitDTO;
 import team.work.platform.dto.ReportDetailsDTO;
+import team.work.platform.dto.ReportSubmitDTO;
+import team.work.platform.mapper.OrdersMapper;
 import team.work.platform.mapper.ReportsMapper;
-import team.work.platform.mapper.UsersMapper;
-import team.work.platform.mapper.TaskMapper;
 import team.work.platform.mapper.ReviewMapper;
+import team.work.platform.mapper.UsersMapper;
+import team.work.platform.model.Orders;
 import team.work.platform.model.Reports;
+import team.work.platform.model.Reviews;
+import team.work.platform.model.Users;
 import team.work.platform.model.enumValue.ReportStatus;
 import team.work.platform.service.ReportService;
 import team.work.platform.utils.UserValidator;
@@ -31,13 +34,13 @@ public class ReportServiceImpl implements ReportService {
     private UsersMapper usersMapper;
 
     @Autowired
-    private TaskMapper taskMapper;
-
-    @Autowired
     private ReviewMapper reviewMapper;
 
     @Autowired
     private UserValidator userValidator;
+
+    @Autowired
+    private OrdersMapper ordersMapper;
 
     @Override
     @Transactional
@@ -56,34 +59,47 @@ public class ReportServiceImpl implements ReportService {
             return Response.Fail(null, "举报原因不能为空!");
         }
 
+        Long reportedUserId = null;
+
         // 根据举报类型验证被举报对象是否存在
         switch (reportSubmitDTO.getReportType()) {
             case USER:
-                if (reportSubmitDTO.getReportedUserId() == null) {
+                reportedUserId = reportSubmitDTO.getReportedUserId();
+                if (reportedUserId == null) {
                     return Response.Fail(null, "被举报用户ID不能为空!");
                 }
-                if (!userValidator.isUserIDExist(reportSubmitDTO.getReportedUserId())) {
+                if (!userValidator.isUserIDExist(reportedUserId)) {
                     return Response.Fail(null, "被举报用户不存在!");
                 }
-                if (currentUserId.equals(reportSubmitDTO.getReportedUserId())) {
+                if (currentUserId.equals(reportedUserId)) {
                     return Response.Fail(null, "不能举报自己!");
                 }
                 break;
             case TASK:
-                if (reportSubmitDTO.getReportedTaskId() == null) {
+                if (reportSubmitDTO.getReportedOrderId() == null) {
                     return Response.Fail(null, "被举报任务ID不能为空!");
                 }
-                if (taskMapper.selectByTaskId(reportSubmitDTO.getReportedTaskId()) == null) {
+                Orders order = ordersMapper.selectById(reportSubmitDTO.getReportedOrderId());
+                if (order == null) {
                     return Response.Fail(null, "被举报任务不存在!");
                 }
+                if (currentUserId.equals(order.getPosterId())) {
+                    return Response.Fail(null, "不能举报自己发布的任务!");
+                }
+                reportedUserId = order.getPosterId();
                 break;
             case REVIEW:
                 if (reportSubmitDTO.getReportedReviewId() == null) {
                     return Response.Fail(null, "被举报评价ID不能为空!");
                 }
-                if (reviewMapper.selectByReviewId(reportSubmitDTO.getReportedReviewId()) == null) {
+                Reviews review = reviewMapper.selectByReviewId(reportSubmitDTO.getReportedReviewId());
+                if (review == null) {
                     return Response.Fail(null, "被举报评价不存在!");
                 }
+                if (currentUserId.equals(review.getRevieweeId())) {
+                    return Response.Fail(null, "不能举报对自己的评价!");
+                }
+                reportedUserId = review.getRevieweeId();
                 break;
             default:
                 return Response.Fail(null, "无效的举报类型!");
@@ -92,8 +108,8 @@ public class ReportServiceImpl implements ReportService {
         // 创建举报记录
         Reports report = new Reports();
         report.setReporterId(currentUserId);
-        report.setReportedUserId(reportSubmitDTO.getReportedUserId());
-        report.setReportedTaskId(reportSubmitDTO.getReportedTaskId());
+        report.setReportedUserId(reportedUserId);
+        report.setReportedTaskId(reportSubmitDTO.getReportedOrderId());
         report.setReportedReviewId(reportSubmitDTO.getReportedReviewId());
         report.setReason(reportSubmitDTO.getReason().trim());
         report.setReportType(reportSubmitDTO.getReportType());
@@ -125,7 +141,14 @@ public class ReportServiceImpl implements ReportService {
                 ReportDetailsDTO dto = new ReportDetailsDTO();
                 dto.setReportId(report.getReportId());
                 dto.setReportedUserId(report.getReportedUserId());
-                dto.setReportedUsername(report.getReportedUsername());
+                
+                if (report.getReportedUserId() != null) {
+                    Users reportedUser = usersMapper.selectById(report.getReportedUserId());
+                    if (reportedUser != null) {
+                        dto.setReportedUsername(reportedUser.getUsername());
+                    }
+                }
+
                 dto.setReportedTaskId(report.getReportedTaskId());
                 dto.setReportedReviewId(report.getReportedReviewId());
                 dto.setReason(report.getReason());

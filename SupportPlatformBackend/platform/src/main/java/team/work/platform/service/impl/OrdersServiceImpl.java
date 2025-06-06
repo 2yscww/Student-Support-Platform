@@ -544,9 +544,6 @@ public class OrdersServiceImpl implements OrdersService {
                 return Response.Fail(null, "订单不存在!");
             }
 
-            if (!currentUserId.equals(order.getPosterId()) && !currentUserId.equals(order.getReceiverId())) {
-                return Response.Fail(null, "您没有权限查看该任务详情!");
-            }
 
             return Response.Success(taskDetails, "获取任务详情成功!");
         } catch (Exception e) {

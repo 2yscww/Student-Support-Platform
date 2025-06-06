@@ -69,4 +69,23 @@ public interface ReviewMapper {
     // 删除评价
     @Delete("DELETE FROM reviews WHERE review_id = #{reviewId}")
     int deleteReview(@Param("reviewId") Long reviewId);
+
+    // 根据订单ID获取评价列表
+    @Select("SELECT r.*, u.username as reviewer_username " +
+            "FROM reviews r " +
+            "JOIN orders o ON r.task_id = o.task_id " +
+            "LEFT JOIN users u ON r.reviewer_id = u.user_id " +
+            "WHERE o.order_id = #{orderId} " +
+            "ORDER BY r.created_at ASC")
+    @Results({
+        @Result(property = "reviewId", column = "review_id"),
+        @Result(property = "taskId", column = "task_id"),
+        @Result(property = "reviewerId", column = "reviewer_id"),
+        @Result(property = "reviewerUsername", column = "reviewer_username"),
+        @Result(property = "revieweeId", column = "reviewee_id"),
+        @Result(property = "rating", column = "rating"),
+        @Result(property = "content", column = "content"),
+        @Result(property = "createdAt", column = "created_at")
+    })
+    List<ReviewListDTO> getReviewsByOrderId(@Param("orderId") Long orderId);
 } 

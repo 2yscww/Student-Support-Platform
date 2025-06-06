@@ -10,6 +10,9 @@ public interface ReviewService {
     // 提交评价
     Response<Object> SubmitReview(ReviewSubmitDTO reviewSubmitDTO);
 
+    // 根据订单ID获取评价列表
+    Response<List<ReviewListDTO>> getReviewsByOrderId(Long orderId);
+
     // 管理员查看所有评价
     Response<List<ReviewListDTO>> getAllReviews();
 

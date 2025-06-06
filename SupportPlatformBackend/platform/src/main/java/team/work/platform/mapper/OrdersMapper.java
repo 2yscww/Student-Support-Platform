@@ -33,6 +33,10 @@ public interface OrdersMapper extends BaseMapper<Orders> {
     @Select("SELECT * FROM orders WHERE order_id = #{orderID}")
     Orders selectOrderById(@Param("orderID") int orderID);
 
+    // 根据taskId查询订单
+    @Select("SELECT * FROM orders WHERE task_id = #{taskID}")
+    Orders selectOrderByTaskId(@Param("taskID") Long taskID);
+
     // 更改接单人
     @Update("UPDATE orders SET receiver_id = #{receiverID} where order_id = #{orderID}")
     int updateReceiverID(@Param("receiverID") int receiverID, @Param("orderID") int orderID);

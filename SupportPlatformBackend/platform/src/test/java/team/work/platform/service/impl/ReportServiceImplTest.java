@@ -113,7 +113,7 @@ public class ReportServiceImplTest {
             mockedStatic.when(JwtAuthenticationFilter::getCurrentUserId).thenReturn(1L);
             
             reportSubmitDTO.setReportType(ReportType.TASK);
-            reportSubmitDTO.setReportedTaskId(1L);
+            reportSubmitDTO.setReportedOrderId(1L);
             when(taskMapper.selectByTaskId(1L)).thenReturn(new Tasks()); // 模拟任务存在
             
             Response<Object> response = reportService.submitReport(reportSubmitDTO);
