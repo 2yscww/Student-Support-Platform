@@ -1,5 +1,6 @@
 package team.work.platform.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.Data;
 import team.work.platform.model.enumValue.ReportType;
@@ -18,5 +19,6 @@ public class ReportListDTO {
     private String reason;            // 举报原因
     private ReportType reportType;    // 举报类型
     private ReportStatus status;      // 举报状态
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
     private LocalDateTime reportedAt; // 举报时间
 } 

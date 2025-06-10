@@ -12,11 +12,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
+import team.work.platform.model.enumValue.Status;
 import team.work.platform.utils.JwtUtil;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
@@ -30,6 +35,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     
     @Autowired
     private UsersMapper usersMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // 定义白名单，这些路径不受用户状态限制
+    private static final List<String> allowedPaths = Arrays.asList(
+        "/api/user/login",
+        "/api/admin/login",
+        "/api/user/register",
+        "/api/user/profile",
+        "/api/admin/profile"
+        // 如果有登出接口，也应加入
+        // "/api/auth/logout" 
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -59,9 +78,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 如果成功获取用户邮箱且安全上下文中没有认证信息，则进行认证
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             
-            // Users user = usersMapper.selectByUserEmail(userEmail);
+            Users user = usersMapper.selectByUserEmail(userEmail);
             
-            if (jwtUtil.validateToken(jwt, userEmail)) {
+            if (user != null && jwtUtil.validateToken(jwt, userEmail)) {
+
+                // 检查用户状态
+                String requestPath = request.getRequestURI();
+                boolean isPathAllowed = allowedPaths.stream().anyMatch(requestPath::startsWith);
+
+                if (!isPathAllowed && (user.getStatus() == Status.FROZEN || user.getStatus() == Status.BANNED)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    String message = "你的账户处于监管状态";
+                    response.getWriter().write(objectMapper.writeValueAsString(Response.Fail(null, message)));
+                    return;
+                }
 
                 String role = jwtUtil.getUserRoleFromToken(jwt);
                 Long userId = jwtUtil.getUserIdFromToken(jwt);
@@ -90,7 +121,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             Object details = SecurityContextHolder.getContext().getAuthentication().getDetails();
             if (details instanceof Map) {
-                return ((Map<String, Long>) details).get("userId");
+                @SuppressWarnings("unchecked")
+                Map<String, Long> detailsMap = (Map<String, Long>) details;
+                return detailsMap.get("userId");
             }
             return null;
         } catch (Exception e) {

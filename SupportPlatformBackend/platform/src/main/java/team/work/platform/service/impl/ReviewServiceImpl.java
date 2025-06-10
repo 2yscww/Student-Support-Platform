@@ -64,6 +64,14 @@ public class ReviewServiceImpl implements ReviewService {
         int reviewResult = reviewMapper.createReview(review);
         if (reviewResult <= 0) return Response.Fail(null, "评价保存失败");
 
+        // 更新用户信誉分
+        Users reviewee = usersMapper.selectById(reviewSubmitDTO.getRevieweeId());
+        if (reviewee != null) {
+            int newCreditScore = reviewee.getCreditScore() + reviewSubmitDTO.getRating();
+            reviewee.setCreditScore(newCreditScore);
+            usersMapper.updateById(reviewee);
+        }
+
         return Response.Success(null, "评价成功");
     }
 
@@ -119,5 +127,10 @@ public class ReviewServiceImpl implements ReviewService {
         } catch (Exception e) {
             return Response.Error(null, "删除评价失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public ReviewListDTO getReviewDetailsById(Long reviewId) {
+        return reviewMapper.getReviewDetailsById(reviewId);
     }
 }

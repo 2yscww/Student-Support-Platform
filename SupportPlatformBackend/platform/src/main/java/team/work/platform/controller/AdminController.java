@@ -1,29 +1,31 @@
 package team.work.platform.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import team.work.platform.common.Response;
-import team.work.platform.dto.AdminLoginDTO;
+import team.work.platform.dto.AdminReportDetailDTO;
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderCancelDTO;
+import team.work.platform.dto.OrderDTO;
 import team.work.platform.dto.OrderStatusUpdateDTO;
+import team.work.platform.dto.ReportListDTO;
+import team.work.platform.dto.ReportStatusUpdateDTO;
+import team.work.platform.dto.ReviewDeleteDTO;
+import team.work.platform.dto.ReviewListDTO;
 import team.work.platform.dto.TaskDetailsDTO;
 import team.work.platform.dto.UserDetailsDTO;
 import team.work.platform.dto.UserStatusDTO;
-import team.work.platform.dto.ReportListDTO;
-import team.work.platform.dto.ReviewListDTO;
-import team.work.platform.dto.ReviewDeleteDTO;
-import team.work.platform.model.enumValue.ReportStatus;
+import team.work.platform.dto.ReportDetailRequestDTO;
 import team.work.platform.service.AdminService;
 import team.work.platform.service.OrdersService;
 import team.work.platform.service.ReviewService;
@@ -33,7 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
-    
+
     @Autowired
     private AdminService adminService;
 
@@ -58,7 +60,8 @@ public class AdminController {
     // ? 管理员删除任务
     @DeleteMapping("/orders/delete")
     public Response<Object> deleteOrder(@RequestBody OrderCancelDTO orderCancelDTO) {
-        return ordersService.adminDeleteOrderById(orderCancelDTO.getOrderId());
+        // The frontend sends taskId as orderId, so we use it as taskId here.
+        return adminService.deleteTaskAndHandleReports(orderCancelDTO.getOrderId());
     }
 
     // ? 管理员查看所有任务
@@ -114,6 +117,12 @@ public class AdminController {
         return adminService.getResolvedReports();
     }
 
+    // ? 管理员更新举报状态
+    @PutMapping("/reports/update-status")
+    public Response<Object> updateReportStatus(@RequestBody ReportStatusUpdateDTO reportStatusUpdateDTO) {
+        return adminService.updateReportStatus(reportStatusUpdateDTO);
+    }
+
     // 管理员查看所有评价列表
     @GetMapping("/reviews/list")
     public Response<List<ReviewListDTO>> getAllReviews() {
@@ -123,6 +132,18 @@ public class AdminController {
     // 管理员删除指定评价
     @DeleteMapping("/reviews/delete")
     public Response<Object> deleteReview(@RequestBody ReviewDeleteDTO reviewDeleteDTO) {
-        return reviewService.deleteReview(reviewDeleteDTO.getReviewId());
+        return adminService.deleteReviewAndHandleReports(reviewDeleteDTO.getReviewId());
+    }
+
+    // ? 获取管理员个人信息
+    @GetMapping("/profile")
+    public Response<Object> getAdminProfile() {
+        return adminService.getAdminProfile();
+    }
+
+    // 获取举报详情
+    @PostMapping("/reports/detail")
+    public Response<AdminReportDetailDTO> getReportDetails(@RequestBody ReportDetailRequestDTO requestDTO) {
+        return adminService.getReportDetails(requestDTO.getReportId());
     }
 } 

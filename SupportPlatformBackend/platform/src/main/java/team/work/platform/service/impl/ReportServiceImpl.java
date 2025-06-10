@@ -46,12 +46,15 @@ public class ReportServiceImpl implements ReportService {
     @Transactional
     public Response<Object> submitReport(ReportSubmitDTO reportSubmitDTO) {
 
-        // TODO 需要给用户加上限制，不能让用户可以无限制的提交举报
-
         // 获取当前用户ID
         Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
         if (currentUserId == null) {
             return Response.Fail(null, "用户未登录!");
+        }
+        
+        // 检查用户是否有未处理的举报
+        if (reportsMapper.countByReporterIdAndStatus(currentUserId, ReportStatus.PENDING) > 0) {
+            return Response.Fail(null, "您有待处理的举报，请等待处理完成后再提交。");
         }
 
         // 验证举报原因是否为空
@@ -96,10 +99,10 @@ public class ReportServiceImpl implements ReportService {
                 if (review == null) {
                     return Response.Fail(null, "被举报评价不存在!");
                 }
-                if (currentUserId.equals(review.getRevieweeId())) {
-                    return Response.Fail(null, "不能举报对自己的评价!");
+                if (currentUserId.equals(review.getReviewerId())) {
+                    return Response.Fail(null, "不能举报自己发表的评价!");
                 }
-                reportedUserId = review.getRevieweeId();
+                reportedUserId = review.getReviewerId();
                 break;
             default:
                 return Response.Fail(null, "无效的举报类型!");

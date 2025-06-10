@@ -70,6 +70,10 @@ public interface ReviewMapper {
     @Delete("DELETE FROM reviews WHERE review_id = #{reviewId}")
     int deleteReview(@Param("reviewId") Long reviewId);
 
+    // 根据任务ID查询评价
+    @Select("SELECT * FROM reviews WHERE task_id = #{taskId}")
+    List<Reviews> findByTaskId(@Param("taskId") Long taskId);
+
     // 根据订单ID获取评价列表
     @Select("SELECT r.*, u.username as reviewer_username " +
             "FROM reviews r " +
@@ -88,4 +92,6 @@ public interface ReviewMapper {
         @Result(property = "createdAt", column = "created_at")
     })
     List<ReviewListDTO> getReviewsByOrderId(@Param("orderId") Long orderId);
+
+    ReviewListDTO getReviewDetailsById(@Param("reviewId") Long reviewId);
 } 

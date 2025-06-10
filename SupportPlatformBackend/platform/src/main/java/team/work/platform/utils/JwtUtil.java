@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -43,8 +45,8 @@ public class JwtUtil {
     }
 
     public Long getUserIdFromToken(String token) {
-    return getAllClaimsFromToken(token).get("userId", Long.class);
-}
+        return getAllClaimsFromToken(token).get("userId", Long.class);
+    }
 
     // 从token中提取过期时间
     public Date getExpirationDateFromToken(String token) {
@@ -97,6 +99,9 @@ public class JwtUtil {
         return (extractedUserEmail.equals(email) && !isTokenExpired(token));
     }
 
-    
-
+    // ! 验证是否注入成功
+    @PostConstruct
+    public void init() {
+        System.out.println("JWT Secret: " + secret);
+    }
 }

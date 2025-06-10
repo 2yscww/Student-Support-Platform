@@ -17,15 +17,26 @@ import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.UserDetailsDTO;
 import team.work.platform.dto.UserStatusDTO;
 import team.work.platform.dto.ReportListDTO;
+import team.work.platform.dto.ReviewListDTO;
+import team.work.platform.dto.TaskDetailsDTO;
+import team.work.platform.dto.UserProfileDTO;
+import team.work.platform.dto.ReportStatusUpdateDTO;
+import team.work.platform.dto.AdminReportDetailDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.mapper.ReportsMapper;
 import team.work.platform.mapper.TaskMapper;
+import team.work.platform.mapper.OrdersMapper;
+import team.work.platform.mapper.ReviewMapper;
 import team.work.platform.model.Users;
+import team.work.platform.model.Orders;
 import team.work.platform.model.Reports;
+import team.work.platform.model.Reviews;
 import team.work.platform.model.enumValue.Role;
 import team.work.platform.model.enumValue.Status;
 import team.work.platform.model.enumValue.ReportStatus;
 import team.work.platform.service.AdminService;
+import team.work.platform.service.OrdersService;
+import team.work.platform.service.ReviewService;
 import team.work.platform.utils.JwtUtil;
 import team.work.platform.utils.UserValidator;
 
@@ -46,6 +57,18 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private TaskMapper taskMapper;
+    
+    @Autowired
+    private OrdersMapper ordersMapper;
+
+    @Autowired
+    private OrdersService ordersService;
+
+    @Autowired
+    private ReviewService reviewService;
+
+    @Autowired
+    private ReviewMapper reviewMapper;
 
     @Override
     public Response<Object> adminLogin(LoginUserDTO adminLoginDTO) {
@@ -209,7 +232,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-
     // 验证状态转换是否合法
     private boolean isValidStatusTransition(ReportStatus currentStatus, ReportStatus newStatus) {
         if (currentStatus == newStatus) {
@@ -231,6 +253,46 @@ public class AdminServiceImpl implements AdminService {
             default:
                 // 其他状态不允许变更
                 return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> updateReportStatus(ReportStatusUpdateDTO reportStatusUpdateDTO) {
+        // 1. 权限验证：检查当前用户是否为管理员
+        Long adminId = JwtAuthenticationFilter.getCurrentUserId();
+        if (adminId == null) {
+            return Response.Fail(null, "管理员未登录!");
+        }
+        Users admin = usersMapper.selectById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            return Response.Fail(null, "无管理员权限!");
+        }
+
+        // 2. 查找举报记录
+        Reports report = reportsMapper.selectById(reportStatusUpdateDTO.getReportId());
+        if (report == null) {
+            return Response.Fail(null, "未找到指定的举报记录!");
+        }
+
+        // 3. 验证状态转换是否合法
+        if (!isValidStatusTransition(report.getStatus(), reportStatusUpdateDTO.getNewStatus())) {
+            return Response.Fail(null, "不合法的状态变更！无法从 " + report.getStatus() + " 变为 " + reportStatusUpdateDTO.getNewStatus());
+        }
+
+        // 4. 更新状态和处理意见
+        report.setStatus(reportStatusUpdateDTO.getNewStatus());
+
+
+        try {
+            int result = reportsMapper.updateById(report);
+            if (result > 0) {
+                return Response.Success(null, "举报状态更新成功！");
+            } else {
+                return Response.Fail(null, "更新举报状态失败！");
+            }
+        } catch (Exception e) {
+            return Response.Error(null, "更新举报状态时发生错误: " + e.getMessage());
         }
     }
 
@@ -277,6 +339,181 @@ public class AdminServiceImpl implements AdminService {
             }
         } catch (Exception e) {
             return Response.Error(null, "获取已处理举报列表失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<Object> getAdminProfile() {
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录");
+        }
+
+        Users user = usersMapper.selectById(currentUserId);
+        if (user == null) {
+            return Response.Fail(null, "用户不存在");
+        }
+
+        if (user.getRole() != Role.ADMIN) {
+            return Response.Fail(null, "无管理员权限!");
+        }
+
+        UserProfileDTO userProfile = new UserProfileDTO();
+        userProfile.setUserId(user.getUserID());
+        userProfile.setUsername(user.getUsername());
+        userProfile.setEmail(user.getEmail());
+        userProfile.setCreditScore(user.getCreditScore());
+        userProfile.setStatus(user.getStatus().toString());
+        userProfile.setRole(user.getRole().toString());
+        userProfile.setCreatedAt(java.util.Date.from(user.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()));
+
+        return Response.Success(userProfile, "获取用户信息成功");
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> deleteReviewAndHandleReports(Long reviewId) {
+        Long adminId = JwtAuthenticationFilter.getCurrentUserId();
+        if (adminId == null) {
+            return Response.Fail(null, "管理员未登录!");
+        }
+        Users admin = usersMapper.selectById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            return Response.Fail(null, "无管理员权限!");
+        }
+
+        ReviewListDTO reviewDetails = reviewService.getReviewDetailsById(reviewId);
+        if (reviewDetails == null) {
+            return Response.Fail(null, "评价不存在!");
+        }
+
+        try {
+            Users reviewer = usersMapper.selectById(reviewDetails.getReviewerId());
+            if (reviewer != null) {
+                int newCreditScore = reviewer.getCreditScore() - 15;
+                reviewer.setCreditScore(Math.max(0, newCreditScore));
+                usersMapper.updateById(reviewer);
+            }
+            // 1. Unlink reports from the review
+            reportsMapper.unlinkReviewFromReports(reviewId);
+
+            // 2. Delete the review
+            reviewService.deleteReview(reviewId);
+
+            return Response.Success(null, "评价已成功删除，相关举报已更新，用户信誉分已扣除。");
+        } catch (Exception e) {
+            // It's good practice to log the exception
+            // logger.error("Error deleting review and handling reports", e);
+            return Response.Error(null, "删除评价时发生错误: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> deleteTaskAndHandleReports(Long taskId) {
+        Long adminId = JwtAuthenticationFilter.getCurrentUserId();
+        if (adminId == null) {
+            return Response.Fail(null, "管理员未登录!");
+        }
+        Users admin = usersMapper.selectById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            return Response.Fail(null, "无管理员权限!");
+        }
+
+        try {
+            Orders order = ordersMapper.findByTaskId(taskId);
+            if (order != null) {
+                Users poster = usersMapper.selectById(order.getPosterId());
+                if (poster != null) {
+                    int newCreditScore = poster.getCreditScore() - 30;
+                    poster.setCreditScore(Math.max(0, newCreditScore));
+                    usersMapper.updateById(poster);
+                }
+            }
+            
+            // 1. Unlink reports from the task itself
+            reportsMapper.unlinkTaskFromReports(taskId);
+
+            // 2. Handle reviews related to the task
+            List<Reviews> reviews = reviewMapper.findByTaskId(taskId);
+            for (Reviews review : reviews) {
+                // 2.1 Unlink reports from each review
+                reportsMapper.unlinkReviewFromReports(review.getReviewId());
+                // 2.2 Delete the review
+                reviewMapper.deleteReview(review.getReviewId());
+            }
+
+            // 3. Delete the order associated with the task
+            if (order != null) {
+                // The order_submissions table has ON DELETE CASCADE, so submissions will be deleted automatically.
+                ordersMapper.deleteById(order.getOrderId());
+            }
+
+            // 4. Finally, delete the task
+            taskMapper.deleteById(taskId);
+
+            return Response.Success(null, "任务及所有关联数据已成功删除，用户信誉分已扣除。");
+
+        } catch (Exception e) {
+            // Log the exception for debugging purposes
+            // logger.error("Error deleting task and handling related data", e);
+            return Response.Error(null, "删除任务时发生错误: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<AdminReportDetailDTO> getReportDetails(Long reportId) {
+        Long adminId = JwtAuthenticationFilter.getCurrentUserId();
+        if (adminId == null) {
+            return Response.Fail(null, "管理员未登录!");
+        }
+        Users admin = usersMapper.selectById(adminId);
+        if (admin == null || admin.getRole() != Role.ADMIN) {
+            return Response.Fail(null, "无管理员权限!");
+        }
+
+        ReportListDTO reportInfo = reportsMapper.getReportInfoById(reportId);
+        if (reportInfo == null) {
+            return Response.Fail(null, "未找到指定的举报记录!");
+        }
+
+        AdminReportDetailDTO detailDTO = new AdminReportDetailDTO();
+        detailDTO.setReportInfo(reportInfo);
+
+        try {
+            switch (reportInfo.getReportType()) {
+                case TASK:
+                    if (reportInfo.getReportedTaskId() != null) {
+                        // Assuming reportedTaskId stores order_id due to existing implementation
+                        Response<Object> taskDetailsResponse = ordersService.getOrderDetail(reportInfo.getReportedTaskId());
+                        if (taskDetailsResponse.getCode() == 200) {
+                           detailDTO.setReportedTaskDetails((TaskDetailsDTO) taskDetailsResponse.getData());
+                        }
+                    }
+                    break;
+                case REVIEW:
+                    if (reportInfo.getReportedReviewId() != null) {
+                        ReviewListDTO reviewDetails = reviewService.getReviewDetailsById(reportInfo.getReportedReviewId());
+                        detailDTO.setReportedReviewDetails(reviewDetails);
+
+                        if (reviewDetails != null && reviewDetails.getTaskId() != null) {
+                            Orders order = ordersMapper.findByTaskId(reviewDetails.getTaskId());
+                            if (order != null) {
+                                Response<Object> taskDetailsResponse = ordersService.getOrderDetail(order.getOrderId());
+                                 if (taskDetailsResponse.getCode() == 200) {
+                                    detailDTO.setReportedTaskDetails((TaskDetailsDTO) taskDetailsResponse.getData());
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case USER:
+                    // User details are already in ReportListDTO, no extra details needed for now.
+                    break;
+            }
+            return Response.Success(detailDTO, "获取举报详情成功");
+        } catch (Exception e) {
+            return Response.Error(null, "获取举报详情时发生错误: " + e.getMessage());
         }
     }
 } 

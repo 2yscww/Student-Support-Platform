@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import team.work.platform.model.Reports;
 import team.work.platform.model.enumValue.ReportStatus;
 import team.work.platform.dto.ReportListDTO;
+import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
@@ -70,7 +71,7 @@ public interface ReportsMapper extends BaseMapper<Reports> {
         @Result(property = "status", column = "status"),
         @Result(property = "reportedAt", column = "reported_at")
     })
-    List<ReportListDTO> getReportList(ReportStatus status);
+    List<ReportListDTO> getReportList(@Param("status") ReportStatus status);
 
     // 获取待处理的举报列表
     @Select("SELECT r.*, " +
@@ -79,7 +80,7 @@ public interface ReportsMapper extends BaseMapper<Reports> {
            "FROM reports r " +
            "LEFT JOIN users u1 ON r.reporter_id = u1.user_id " +
            "LEFT JOIN users u2 ON r.reported_user_id = u2.user_id " +
-           "WHERE r.status = 'PENDING' " +
+           "WHERE r.status IN ('PENDING', 'INVESTIGATING') " +
            "ORDER BY r.reported_at DESC")
     @Results({
         @Result(property = "reportId", column = "report_id"),
@@ -106,7 +107,7 @@ public interface ReportsMapper extends BaseMapper<Reports> {
            "FROM reports r " +
            "LEFT JOIN users u1 ON r.reporter_id = u1.user_id " +
            "LEFT JOIN users u2 ON r.reported_user_id = u2.user_id " +
-           "WHERE r.status != 'PENDING' " +
+           "WHERE r.status NOT IN ('PENDING', 'INVESTIGATING') " +
            "ORDER BY r.handled_at DESC, r.reported_at DESC")
     @Results({
         @Result(property = "reportId", column = "report_id"),
@@ -125,4 +126,12 @@ public interface ReportsMapper extends BaseMapper<Reports> {
         @Result(property = "handledBy", column = "handled_by")
     })
     List<ReportListDTO> getResolvedReports();
+
+    int countByReporterIdAndStatus(@Param("reporterId") Long reporterId, @Param("status") ReportStatus status);
+
+    ReportListDTO getReportInfoById(@Param("reportId") Long reportId);
+
+    void unlinkReviewFromReports(@Param("reviewId") Long reviewId);
+
+    void unlinkTaskFromReports(@Param("taskId") Long taskId);
 } 

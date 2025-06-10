@@ -4,6 +4,8 @@ import team.work.platform.common.Response;
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.dto.PasswordUpdateDTO;
+import team.work.platform.dto.UserUpdateDTO;
+import team.work.platform.model.Users;
 
 public interface UsersService {
 
@@ -21,6 +23,9 @@ public interface UsersService {
     // 判断密码是否一致
     // boolean isPasswordEqual(RegisterUserDTO registerUserDTO);
 
+    // ? 发送验证码
+    Response<Object> sendCode(String email);
+
     // ? 用户注册
     Response<Object> RegisterUser(RegisterUserDTO registerUserDTO);
 
@@ -29,4 +34,9 @@ public interface UsersService {
 
     // 修改密码
     Response<Object> updatePassword(PasswordUpdateDTO passwordUpdateDTO);
+
+    Response<Object> getUserProfile();
+
+    // 更新用户信息
+    Response<Object> updateUserInfo(UserUpdateDTO userUpdateDTO);
 }

@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import team.work.platform.dto.LoginUserDTO;
 import team.work.platform.dto.RegisterUserDTO;
 import team.work.platform.dto.PasswordUpdateDTO;
+import team.work.platform.dto.UserProfileDTO;
+import team.work.platform.dto.UserUpdateDTO;
 import team.work.platform.mapper.UsersMapper;
 import team.work.platform.model.Users;
 import team.work.platform.service.UsersService;
@@ -18,6 +20,10 @@ import team.work.platform.utils.JwtUtil;
 import team.work.platform.utils.UserValidator;
 import team.work.platform.common.Response;
 import team.work.platform.common.JwtAuthenticationFilter;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import team.work.platform.service.EmailService;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -31,12 +37,36 @@ public class UsersServiceImpl implements UsersService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // ? 用户注册
+    @Override
+    public Response<Object> sendCode(String email) {
+        if (userValidator.isEmailExist(email)) {
+            return Response.Fail(null, "此邮箱已注册过账户!");
+        }
+        String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 1000000));
+        redisTemplate.opsForValue().set("register:" + email, code, 15, TimeUnit.MINUTES);
+        emailService.sendSimpleMail(email, "注册验证码", "您的验证码是：" + code + "，15分钟内有效。");
+        return Response.Success(null, "验证码发送成功");
+    }
 
+    // ? 用户注册
     @Override
     public Response<Object> RegisterUser(RegisterUserDTO registerUserDTO) {
+
+        String codeInRedis = redisTemplate.opsForValue().get("register:" + registerUserDTO.getEmail());
+        if (codeInRedis == null) {
+            return Response.Fail(null, "验证码已过期");
+        }
+        if (!codeInRedis.equals(registerUserDTO.getCode())) {
+            return Response.Fail(null, "验证码错误");
+        }
 
         if (userValidator.isUserNameExist(registerUserDTO.getUsername())) {
             return Response.Fail(null, "用户名重复!");
@@ -68,6 +98,8 @@ public class UsersServiceImpl implements UsersService {
         responseData.put("userId", user.getUserID());
         responseData.put("username", user.getUsername());
         responseData.put("role", user.getRole().toString());
+
+        redisTemplate.delete("register:" + registerUserDTO.getEmail());
 
         return Response.Success(responseData, "注册成功!");
     }
@@ -149,6 +181,61 @@ public class UsersServiceImpl implements UsersService {
             }
         } catch (Exception e) {
             return Response.Error(null, "密码修改失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Response<Object> getUserProfile() {
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录");
+        }
+
+        Users user = usersmapper.selectById(currentUserId);
+        if (user == null) {
+            return Response.Fail(null, "用户不存在");
+        }
+
+        UserProfileDTO userProfile = new UserProfileDTO();
+        userProfile.setUserId(user.getUserID());
+        userProfile.setUsername(user.getUsername());
+        userProfile.setEmail(user.getEmail());
+        userProfile.setCreditScore(user.getCreditScore());
+        userProfile.setStatus(user.getStatus().toString());
+        userProfile.setRole(user.getRole().toString());
+        userProfile.setCreatedAt(java.util.Date.from(user.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()));
+
+        return Response.Success(userProfile, "获取用户信息成功");
+    }
+
+    @Override
+    @Transactional
+    public Response<Object> updateUserInfo(UserUpdateDTO userUpdateDTO) {
+        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+        if (currentUserId == null) {
+            return Response.Fail(null, "用户未登录");
+        }
+
+        Users currentUser = usersmapper.selectById(currentUserId);
+        if (currentUser == null) {
+            return Response.Fail(null, "用户不存在");
+        }
+
+        // 检查用户名是否已存在（排除当前用户）
+        Users userByUsername = usersmapper.selectByUserName(userUpdateDTO.getUsername());
+        if (userByUsername != null && !userByUsername.getUserID().equals(currentUserId)) {
+            return Response.Fail(null, "用户名已存在");
+        }
+
+        try {
+            int result = usersmapper.updateUser(currentUserId, userUpdateDTO.getUsername());
+            if (result > 0) {
+                return Response.Success(null, "用户信息更新成功");
+            } else {
+                return Response.Fail(null, "用户信息更新失败");
+            }
+        } catch (Exception e) {
+            return Response.Error(null, "用户信息更新失败: " + e.getMessage());
         }
     }
 

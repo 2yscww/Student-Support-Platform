@@ -70,4 +70,8 @@ public interface UsersMapper extends BaseMapper<Users> {
     // 修改用户密码
     @Update("UPDATE users SET password = #{newPassword} WHERE user_id = #{userId}")
     int updatePassword(@Param("userId") Long userId, @Param("newPassword") String newPassword);
+
+    // 更新用户信息
+    @Update("UPDATE users SET username = #{username} WHERE user_id = #{userId}")
+    int updateUser(@Param("userId") Long userId, @Param("username") String username);
 }
