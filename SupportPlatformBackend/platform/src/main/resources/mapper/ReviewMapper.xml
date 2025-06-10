@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team.work.platform.mapper.ReviewMapper">
+
+    <!-- Existing content will be preserved here by the model -->
+    <!-- I am adding the new select statement at the end -->
+
+    <select id="getReviewDetailsById" resultType="team.work.platform.dto.ReviewListDTO">
+        SELECT
+            r.review_id as reviewId,
+            r.task_id as taskId,
+            t.title as taskTitle,
+            r.reviewer_id as reviewerId,
+            u1.username as reviewerUsername,
+            r.reviewee_id as revieweeId,
+            u2.username as revieweeUsername,
+            r.rating,
+            r.content,
+            r.created_at as createdAt
+        FROM
+            reviews r
+        LEFT JOIN users u1 ON r.reviewer_id = u1.user_id
+        LEFT JOIN users u2 ON r.reviewee_id = u2.user_id
+        LEFT JOIN tasks t ON r.task_id = t.task_id
+        WHERE
+            r.review_id = #{reviewId}
+    </select>
+</mapper> 

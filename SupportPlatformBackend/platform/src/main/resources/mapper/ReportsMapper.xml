@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="team.work.platform.mapper.ReportsMapper">
+
+    <insert id="createReport" parameterType="team.work.platform.model.Reports" useGeneratedKeys="true" keyProperty="reportId">
+        INSERT INTO reports (reporter_id, reported_user_id, reported_task_id, reported_review_id, reason, report_type, status, reported_at)
+        VALUES (#{reporterId}, #{reportedUserId}, #{reportedTaskId}, #{reportedReviewId}, #{reason}, #{reportType}, #{status}, #{reportedAt})
+    </insert>
+
+    <select id="findByReporterId" resultType="team.work.platform.model.Reports">
+        SELECT * FROM reports WHERE reporter_id = #{reporterId}
+    </select>
+
+    <select id="countByReporterIdAndStatus" resultType="int">
+        SELECT count(*) FROM reports WHERE reporter_id = #{reporterId} AND status = #{status}
+    </select>
+    
+    <resultMap id="reportListDtoResultMap" type="team.work.platform.dto.ReportListDTO">
+        <id property="reportId" column="report_id"/>
+        <result property="reporterUsername" column="reporter_username"/>
+        <result property="reportedUsername" column="reported_username"/>
+        <result property="reason" column="reason"/>
+        <result property="reportType" column="report_type"/>
+        <result property="status" column="status"/>
+        <result property="reportedAt" column="reported_at"/>
+    </resultMap>
+
+    <select id="getAllReports" resultMap="reportListDtoResultMap">
+        SELECT
+            r.report_id,
+            u1.username AS reporter_username,
+            u2.username AS reported_username,
+            r.reason,
+            r.report_type,
+            r.status,
+            r.reported_at
+        FROM
+            reports r
+                JOIN
+            users u1 ON r.reporter_id = u1.user_id
+                JOIN
+            users u2 ON r.reported_user_id = u2.user_id
+        ORDER BY
+            r.reported_at DESC
+    </select>
+
+    <select id="getPendingReports" resultMap="reportListDtoResultMap">
+        SELECT
+            r.report_id,
+            u1.username AS reporter_username,
+            u2.username AS reported_username,
+            r.reason,
+            r.report_type,
+            r.status,
+            r.reported_at
+        FROM
+            reports r
+                JOIN
+            users u1 ON r.reporter_id = u1.user_id
+                JOIN
+            users u2 ON r.reported_user_id = u2.user_id
+        WHERE
+            r.status = 'PENDING'
+        ORDER BY
+            r.reported_at DESC
+    </select>
+
+    <select id="getResolvedReports" resultMap="reportListDtoResultMap">
+        SELECT
+            r.report_id,
+            u1.username AS reporter_username,
+            u2.username AS reported_username,
+            r.reason,
+            r.report_type,
+            r.status,
+            r.reported_at
+        FROM
+            reports r
+                JOIN
+            users u1 ON r.reporter_id = u1.user_id
+                JOIN
+            users u2 ON r.reported_user_id = u2.user_id
+        WHERE
+            r.status IN ('RESOLVED', 'REJECTED', 'INVALID')
+        ORDER BY
+            r.reported_at DESC
+    </select>
+
+    <select id="getReportInfoById" resultType="team.work.platform.dto.ReportListDTO">
+        SELECT
+            r.report_id AS reportId,
+            r.reporter_id AS reporterId,
+            u1.username AS reporterUsername,
+            r.reported_user_id AS reportedUserId,
+            u2.username AS reportedUsername,
+            r.reported_task_id AS reportedTaskId,
+            r.reported_review_id AS reportedReviewId,
+            r.reason,
+            r.report_type AS reportType,
+            r.status,
+            r.reported_at AS reportedAt
+        FROM
+            reports r
+        LEFT JOIN users u1 ON r.reporter_id = u1.user_id
+        LEFT JOIN users u2 ON r.reported_user_id = u2.user_id
+        WHERE
+            r.report_id = #{reportId}
+    </select>
+
+    <update id="unlinkReviewFromReports">
+        UPDATE reports
+        SET reported_review_id = NULL
+        WHERE reported_review_id = #{reviewId}
+    </update>
+
+    <update id="unlinkTaskFromReports">
+        UPDATE reports
+        SET reported_task_id = NULL
+        WHERE reported_task_id = #{taskId}
+    </update>
+
+</mapper> 

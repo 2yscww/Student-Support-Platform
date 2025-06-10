@@ -18,6 +18,7 @@
         LEFT JOIN orders o ON o.task_id = t.task_id
         LEFT JOIN users poster ON o.poster_id = poster.user_id
         LEFT JOIN users receiver ON o.receiver_id = receiver.user_id
+        ORDER BY createdAt DESC
     </select>
 
 </mapper>

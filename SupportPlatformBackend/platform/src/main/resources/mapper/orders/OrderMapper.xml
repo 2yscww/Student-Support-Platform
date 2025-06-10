@@ -20,4 +20,14 @@
         WHERE o.poster_id = #{posterId}
     </select>
 
+    <select id="findByTaskId" resultType="team.work.platform.model.Orders">
+        SELECT
+            *
+        FROM
+            orders
+        WHERE
+            task_id = #{taskId}
+        LIMIT 1
+    </select>
+
 </mapper>
