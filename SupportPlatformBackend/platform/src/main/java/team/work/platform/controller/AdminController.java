@@ -123,7 +123,7 @@ public class AdminController {
         return adminService.updateReportStatus(reportStatusUpdateDTO);
     }
 
-    // 管理员查看所有评价列表
+    // ? 管理员查看所有评价列表
     @GetMapping("/reviews/list")
     public Response<List<ReviewListDTO>> getAllReviews() {
         return reviewService.getAllReviews();
