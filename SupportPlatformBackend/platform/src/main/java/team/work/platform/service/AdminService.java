@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface AdminService {
     // 管理员登录
-    Response<Object> adminLogin(LoginUserDTO adminLoginDTO);
+    // Response<Object> adminLogin(LoginUserDTO adminLoginDTO);
 
     // 获取所有用户信息
     Response<List<UserDetailsDTO>> getAllUsers();
@@ -28,10 +28,10 @@ public interface AdminService {
     Response<List<ReportListDTO>> getReportList(ReportStatus status);
 
     // 获取待处理的举报列表
-    Response<List<ReportListDTO>> getPendingReports();
+    // Response<List<ReportListDTO>> getPendingReports();
 
     // 获取已处理的举报列表（包括已处理、已驳回、无效等状态）
-    Response<List<ReportListDTO>> getResolvedReports();
+    // Response<List<ReportListDTO>> getResolvedReports();
 
     // 更新举报状态
     Response<Object> updateReportStatus(ReportStatusUpdateDTO reportStatusUpdateDTO);

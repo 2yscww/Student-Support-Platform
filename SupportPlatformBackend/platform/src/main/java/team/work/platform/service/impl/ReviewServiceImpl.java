@@ -85,25 +85,25 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 
-    @Override
-    public Response<List<ReviewListDTO>> getAllReviews() {
-        Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
-        if (currentUserId == null) return Response.Fail(null, "用户未登录");
+    // @Override
+    // public Response<List<ReviewListDTO>> getAllReviews() {
+    //     Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+    //     if (currentUserId == null) return Response.Fail(null, "用户未登录");
 
-        Users currentUser = usersMapper.selectById(currentUserId);
-        if (currentUser == null || currentUser.getRole() != Role.ADMIN) return Response.Fail(null, "无权限访问");
+    //     Users currentUser = usersMapper.selectById(currentUserId);
+    //     if (currentUser == null || currentUser.getRole() != Role.ADMIN) return Response.Fail(null, "无权限访问");
 
-        try {
-            List<ReviewListDTO> reviews = reviewMapper.getAllReviews();
-            if (reviews != null && !reviews.isEmpty()) {
-                return Response.Success(reviews, "获取评价列表成功");
-            } else {
-                return Response.Success(null, "暂无评价记录");
-            }
-        } catch (Exception e) {
-            return Response.Error(null, "获取评价列表失败: " + e.getMessage());
-        }
-    }
+    //     try {
+    //         List<ReviewListDTO> reviews = reviewMapper.getAllReviews();
+    //         if (reviews != null && !reviews.isEmpty()) {
+    //             return Response.Success(reviews, "获取评价列表成功");
+    //         } else {
+    //             return Response.Success(null, "暂无评价记录");
+    //         }
+    //     } catch (Exception e) {
+    //         return Response.Error(null, "获取评价列表失败: " + e.getMessage());
+    //     }
+    // }
 
     @Override
     @Transactional

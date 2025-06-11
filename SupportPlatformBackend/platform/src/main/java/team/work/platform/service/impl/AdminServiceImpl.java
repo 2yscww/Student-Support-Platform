@@ -70,39 +70,7 @@ public class AdminServiceImpl implements AdminService {
     @Autowired
     private ReviewMapper reviewMapper;
 
-    @Override
-    public Response<Object> adminLogin(LoginUserDTO adminLoginDTO) {
-        // 1. 验证邮箱是否存在
-        if (!userValidator.isEmailExist(adminLoginDTO.getEmail())) {
-            return Response.Fail(null, "邮箱或密码错误!");
-        }
-
-        // 2. 获取用户信息
-        Users user = usersMapper.selectByUserEmail(adminLoginDTO.getEmail());
-
-        // 3. 验证用户是否是管理员
-        if (user.getRole() != Role.ADMIN) {
-            return Response.Fail(null, "该账号没有管理员权限!");
-        }
-
-        // 4. 验证密码
-        String userPassword = userValidator.findPasswordUseEmail(adminLoginDTO.getEmail());
-        if (!userValidator.loginPasswordEqual(userPassword, adminLoginDTO.getPassword())) {
-            return Response.Fail(null, "邮箱或密码错误!");
-        }
-
-        // 5. 生成JWT令牌
-        String token = jwtUtil.generateToken(user.getEmail(), user.getUserID(), user.getRole().toString());
-
-        // 6. 创建返回数据
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("token", token);
-        responseData.put("userId", user.getUserID());
-        responseData.put("username", user.getUsername());
-        responseData.put("role", user.getRole().toString());
-
-        return Response.Success(responseData, "登录成功!");
-    }
+    
 
     @Override
     public Response<List<UserDetailsDTO>> getAllUsers() {
@@ -296,51 +264,51 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    @Override
-    public Response<List<ReportListDTO>> getPendingReports() {
-        try {
-            // 获取待处理的举报列表
-            List<ReportListDTO> reportList = reportsMapper.getPendingReports();
+    // @Override
+    // public Response<List<ReportListDTO>> getPendingReports() {
+    //     try {
+    //         // 获取待处理的举报列表
+    //         List<ReportListDTO> reportList = reportsMapper.getPendingReports();
             
-            if (reportList != null && !reportList.isEmpty()) {
-                // 补充任务标题信息
-                for (ReportListDTO report : reportList) {
-                    if (report.getReportedTaskId() != null) {
-                        String taskTitle = taskMapper.getTaskTitleById(report.getReportedTaskId());
-                        report.setReportedTaskTitle(taskTitle);
-                    }
-                }
-                return Response.Success(reportList, "获取待处理举报列表成功");
-            } else {
-                return Response.Success(null, "暂无待处理举报");
-            }
-        } catch (Exception e) {
-            return Response.Error(null, "获取待处理举报列表失败: " + e.getMessage());
-        }
-    }
+    //         if (reportList != null && !reportList.isEmpty()) {
+    //             // 补充任务标题信息
+    //             for (ReportListDTO report : reportList) {
+    //                 if (report.getReportedTaskId() != null) {
+    //                     String taskTitle = taskMapper.getTaskTitleById(report.getReportedTaskId());
+    //                     report.setReportedTaskTitle(taskTitle);
+    //                 }
+    //             }
+    //             return Response.Success(reportList, "获取待处理举报列表成功");
+    //         } else {
+    //             return Response.Success(null, "暂无待处理举报");
+    //         }
+    //     } catch (Exception e) {
+    //         return Response.Error(null, "获取待处理举报列表失败: " + e.getMessage());
+    //     }
+    // }
 
-    @Override
-    public Response<List<ReportListDTO>> getResolvedReports() {
-        try {
-            // 获取已处理的举报列表（包括已处理、已驳回、无效等状态）
-            List<ReportListDTO> reportList = reportsMapper.getResolvedReports();
+    // @Override
+    // public Response<List<ReportListDTO>> getResolvedReports() {
+    //     try {
+    //         // 获取已处理的举报列表（包括已处理、已驳回、无效等状态）
+    //         List<ReportListDTO> reportList = reportsMapper.getResolvedReports();
             
-            if (reportList != null && !reportList.isEmpty()) {
-                // 补充任务标题信息
-                for (ReportListDTO report : reportList) {
-                    if (report.getReportedTaskId() != null) {
-                        String taskTitle = taskMapper.getTaskTitleById(report.getReportedTaskId());
-                        report.setReportedTaskTitle(taskTitle);
-                    }
-                }
-                return Response.Success(reportList, "获取已处理举报列表成功");
-            } else {
-                return Response.Success(null, "暂无已处理举报");
-            }
-        } catch (Exception e) {
-            return Response.Error(null, "获取已处理举报列表失败: " + e.getMessage());
-        }
-    }
+    //         if (reportList != null && !reportList.isEmpty()) {
+    //             // 补充任务标题信息
+    //             for (ReportListDTO report : reportList) {
+    //                 if (report.getReportedTaskId() != null) {
+    //                     String taskTitle = taskMapper.getTaskTitleById(report.getReportedTaskId());
+    //                     report.setReportedTaskTitle(taskTitle);
+    //                 }
+    //             }
+    //             return Response.Success(reportList, "获取已处理举报列表成功");
+    //         } else {
+    //             return Response.Success(null, "暂无已处理举报");
+    //         }
+    //     } catch (Exception e) {
+    //         return Response.Error(null, "获取已处理举报列表失败: " + e.getMessage());
+    //     }
+    // }
 
     @Override
     public Response<Object> getAdminProfile() {

@@ -14,7 +14,7 @@ public interface ReviewService {
     Response<List<ReviewListDTO>> getReviewsByOrderId(Long orderId);
 
     // 管理员查看所有评价
-    Response<List<ReviewListDTO>> getAllReviews();
+    // Response<List<ReviewListDTO>> getAllReviews();
 
     // 管理员删除评价
     Response<Object> deleteReview(Long reviewId);

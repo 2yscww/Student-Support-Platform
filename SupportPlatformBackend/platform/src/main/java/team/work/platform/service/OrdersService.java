@@ -45,10 +45,10 @@ public interface OrdersService {
     Response<Object> adminDeleteOrderById(Long orderId);
 
     // ? 管理员更新订单和任务状态
-    Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO);
+    // Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO);
 
     // ? 修改未接单任务信息
-    Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO);
+    // Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO);
 
     Response<Object> getMyReceivedOrders();
 

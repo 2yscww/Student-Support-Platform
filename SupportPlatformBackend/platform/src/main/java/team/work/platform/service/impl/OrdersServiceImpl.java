@@ -395,109 +395,63 @@ public class OrdersServiceImpl implements OrdersService {
         }
     }
 
-    @Override
-    @Transactional
-    public Response<Object> adminUpdateOrderStatus(OrderStatusUpdateDTO updateDTO) {
-        try {
-            // 查询订单信息
-            Orders order = ordersMapper.selectOrderById(updateDTO.getOrderId().intValue());
-            if (order == null) {
-                return Response.Fail(null, "订单不存在");
-            }
-
-            // 更新订单状态
-            if (updateDTO.getOrderStatus() != null) {
-                int orderStatusResult = ordersMapper.updateOrderStatus(
-                    updateDTO.getOrderStatus(),
-                    updateDTO.getOrderId().intValue()
-                );
-                if (orderStatusResult <= 0) {
-                    throw new RuntimeException("更新订单状态失败");
-                }
-            }
-
-            // 更新任务状态
-            if (updateDTO.getTaskStatus() != null) {
-                int taskStatusResult = ordersMapper.updateTaskStatus(
-                    updateDTO.getTaskStatus(),
-                    updateDTO.getOrderId().intValue()
-                );
-                if (taskStatusResult <= 0) {
-                    throw new RuntimeException("更新任务状态失败");
-                }
-            }
-
-            // 如果状态更新为CONFIRMED，更新确认时间
-            if ("CONFIRMED".equals(updateDTO.getOrderStatus())) {
-                int timeResult = ordersMapper.updateConfirmedTime(updateDTO.getOrderId().intValue());
-                if (timeResult <= 0) {
-                    throw new RuntimeException("更新确认时间失败");
-                }
-            }
-
-            return Response.Success(null, "状态更新成功" + 
-                (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
-        } catch (Exception e) {
-            return Response.Fail(null, "状态更新失败：" + e.getMessage());
-        }
-    }
 
     // ? 修改未接单任务信息
-    @Override
-    @Transactional
-    public Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO) {
-        try {
-            // 获取当前登录用户ID
-            Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
-            if (currentUserId == null) {
-                return Response.Fail(null, "未获取到用户信息");
-            }
+    // @Override
+    // @Transactional
+    // public Response<Object> updateOrder(OrderStatusUpdateDTO updateDTO) {
+    //     try {
+    //         // 获取当前登录用户ID
+    //         Long currentUserId = JwtAuthenticationFilter.getCurrentUserId();
+    //         if (currentUserId == null) {
+    //             return Response.Fail(null, "未获取到用户信息");
+    //         }
 
-            // 查询订单信息
-            Orders order = ordersMapper.selectOrderById(updateDTO.getOrderId().intValue());
-            if (order == null) {
-                return Response.Fail(null, "订单不存在");
-            }
+    //         // 查询订单信息
+    //         Orders order = ordersMapper.selectOrderById(updateDTO.getOrderId().intValue());
+    //         if (order == null) {
+    //             return Response.Fail(null, "订单不存在");
+    //         }
 
-            // 验证当前用户是否为发布者
-            if (!currentUserId.equals(order.getPosterId())) {
-                return Response.Fail(null, "只有发布者可以修改任务信息");
-            }
+    //         // 验证当前用户是否为发布者
+    //         if (!currentUserId.equals(order.getPosterId())) {
+    //             return Response.Fail(null, "只有发布者可以修改任务信息");
+    //         }
 
-            // 查询任务信息
-            Tasks task = tasksMapper.selectById(order.getTaskId());
-            if (task == null) {
-                return Response.Fail(null, "任务不存在");
-            }
+    //         // 查询任务信息
+    //         Tasks task = tasksMapper.selectById(order.getTaskId());
+    //         if (task == null) {
+    //             return Response.Fail(null, "任务不存在");
+    //         }
 
-            // 验证任务状态是否为待接单
-            if (task.getStatus() != TaskStatus.PENDING) {
-                return Response.Fail(null, "只能修改未接单的任务");
-            }
+    //         // 验证任务状态是否为待接单
+    //         if (task.getStatus() != TaskStatus.PENDING) {
+    //             return Response.Fail(null, "只能修改未接单的任务");
+    //         }
 
-            // 更新任务信息
-            if (updateDTO.getTitle() != null) {
-                task.setTitle(updateDTO.getTitle());
-            }
-            if (updateDTO.getDescription() != null) {
-                task.setDescription(updateDTO.getDescription());
-            }
-            if (updateDTO.getReward() != null) {
-                task.setReward(updateDTO.getReward());
-            }
+    //         // 更新任务信息
+    //         if (updateDTO.getTitle() != null) {
+    //             task.setTitle(updateDTO.getTitle());
+    //         }
+    //         if (updateDTO.getDescription() != null) {
+    //             task.setDescription(updateDTO.getDescription());
+    //         }
+    //         if (updateDTO.getReward() != null) {
+    //             task.setReward(updateDTO.getReward());
+    //         }
 
-            // 保存更新
-            int result = tasksMapper.updateById(task);
-            if (result <= 0) {
-                throw new RuntimeException("更新任务信息失败");
-            }
+    //         // 保存更新
+    //         int result = tasksMapper.updateById(task);
+    //         if (result <= 0) {
+    //             throw new RuntimeException("更新任务信息失败");
+    //         }
 
-            return Response.Success(null, "任务信息更新成功" + 
-                (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
-        } catch (Exception e) {
-            return Response.Fail(null, "更新失败：" + e.getMessage());
-        }
-    }
+    //         return Response.Success(null, "任务信息更新成功" + 
+    //             (updateDTO.getReason() != null ? "，原因：" + updateDTO.getReason() : ""));
+    //     } catch (Exception e) {
+    //         return Response.Fail(null, "更新失败：" + e.getMessage());
+    //     }
+    // }
 
     @Override
     public Response<Object> getMyReceivedOrders() {
