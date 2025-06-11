@@ -18,12 +18,12 @@ const routes = [
     component: () => import('@/views/UserRegister.vue'),
     meta: { requiresAuth: false }
   },
-  {
-    path: '/home',
-    name: 'Home',
-    component: () => import('@/views/UserHome.vue'),
-    meta: { requiresAuth: true, title: '首页' }
-  },
+  // {
+  //   path: '/home',
+  //   name: 'Home',
+  //   component: () => import('@/views/UserHome.vue'),
+  //   meta: { requiresAuth: true, title: '首页' }
+  // },
   {
     path: '/task-hall',
     name: 'TaskHall',
