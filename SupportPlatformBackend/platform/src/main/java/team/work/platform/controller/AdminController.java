@@ -45,17 +45,6 @@ public class AdminController {
     @Autowired
     private ReviewService reviewService;
 
-    // ? 管理员登录
-    // @PostMapping("/login")
-    // public Response<Object> adminLogin(@RequestBody LoginUserDTO adminLoginDTO) {
-    //     return adminService.adminLogin(adminLoginDTO);
-    // }
-
-    // ? 管理员添加任务
-    // @PostMapping("/orders/add")
-    // public Response<Object> addTask(@RequestBody OrderDTO orderDTO) {
-    //     return ordersService.CreateTaskAndOrder(orderDTO);
-    // }
 
     // * 管理员删除任务
     @DeleteMapping("/orders/delete")
@@ -100,17 +89,6 @@ public class AdminController {
         return adminService.getReportList(null);
     }
 
-    // ? 管理员查看待处理举报
-    // @GetMapping("/reports/list/pending")
-    // public Response<List<ReportListDTO>> getPendingReports() {
-    //     return adminService.getPendingReports();
-    // }
-
-    // ? 管理员查看已处理举报（包括已处理、已驳回、无效等状态）
-    // @GetMapping("/reports/list/resolved")
-    // public Response<List<ReportListDTO>> getResolvedReports() {
-    //     return adminService.getResolvedReports();
-    // }
 
     // * 管理员更新举报状态
     @PutMapping("/reports/update-status")
@@ -118,11 +96,6 @@ public class AdminController {
         return adminService.updateReportStatus(reportStatusUpdateDTO);
     }
 
-    // ? 管理员查看所有评价列表
-    // @GetMapping("/reviews/list")
-    // public Response<List<ReviewListDTO>> getAllReviews() {
-    //     return reviewService.getAllReviews();
-    // }
 
     // * 管理员删除指定评价
     @DeleteMapping("/reviews/delete")

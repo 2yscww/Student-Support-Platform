@@ -21,11 +21,12 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    // * 用户提交评价
     @PostMapping("/submit")
     public Response<Object> SubmitReview(@RequestBody ReviewSubmitDTO reviewSubmitDTO) {
         return reviewService.SubmitReview(reviewSubmitDTO);
     }
-
+    // * 用户获得相应任务的评价
     @PostMapping("/order")
     public Response<List<ReviewListDTO>> getReviewsByOrderId(@RequestBody OrderSubmitDTO orderSubmitDTO) {
         return reviewService.getReviewsByOrderId(orderSubmitDTO.getOrderId());

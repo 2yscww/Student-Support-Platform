@@ -18,6 +18,7 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
+    // * 用户支付
     @PostMapping("/pay")
     public Response<Object> pay(@RequestBody PayRequestDTO payRequestDTO) {
         try {

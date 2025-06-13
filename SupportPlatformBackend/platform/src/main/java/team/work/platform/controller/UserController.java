@@ -27,52 +27,42 @@ public class UserController {
     @Autowired
     private UsersService usersService;
 
-    // 查找用户名
-    // @PostMapping("/username")
-    // public Users getUserName(@RequestParam String userName) {
-    //     return usersService.selectByUserName(userName);
-    // }
 
-    // 查找邮箱
-    // @PostMapping("/email")
-    // public Users getUserEmail(@RequestParam String email) {
-    //     return usersService.selectByUserEmail(email);
-    // }
     
-    // ? 发送注册验证码
+    // * 发送注册验证码
     @PostMapping("/send-code")
     public Response<Object> sendCode(@RequestParam String email) {
         return usersService.sendCode(email);
     }
 
 
-    // ? 用户注册
+    // * 用户注册
     @PostMapping("/register")
     public Response<Object> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
         return usersService.RegisterUser(registerUserDTO);
         
     }
 
-    // ? 用户登录
+    // * 用户登录
     @PostMapping("/login")
     public Response<Object> userLogin(@RequestBody LoginUserDTO loginUserDTO) {
         return usersService.LoginUser(loginUserDTO);
         
     }
 
-    // ? 修改密码
+    // * 修改密码
     @PostMapping("/password/update")
     public Response<Object> updatePassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
         return usersService.updatePassword(passwordUpdateDTO);
     }
 
-    // ? 获取用户个人信息
+    // * 获取用户个人信息
     @GetMapping("/profile")
     public Response<Object> getUserProfile() {
         return usersService.getUserProfile();
     }
 
-    // ? 修改用户个人信息
+    // * 修改用户个人信息
     @PostMapping("/update")
     public Response<Object> updateUser(@RequestBody UserUpdateDTO userUpdateDTO) {
         return usersService.updateUserInfo(userUpdateDTO);

@@ -18,11 +18,12 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
+    // * 用户提交举报
     @PostMapping("/submit")
     public Response<Object> submitReport(@RequestBody ReportSubmitDTO reportSubmitDTO) {
         return reportService.submitReport(reportSubmitDTO);
     }
-
+    // * 用户查看自己的举报
     @GetMapping("/my")
     public Response<Object> getMyReports() {
         return reportService.getMyReports();

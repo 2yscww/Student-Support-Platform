@@ -79,11 +79,7 @@ public class OrderController {
         return ordersService.cancelOrder(orderCancelDTO);
     }
 
-    // ? 修改未接单任务信息
-    // @PostMapping("/update")
-    // public Response<Object> updateOrder(@RequestBody OrderStatusUpdateDTO updateDTO) {
-    //     return ordersService.updateOrder(updateDTO);
-    // }
+
     // * 查询用户自己接受的任务
     @GetMapping("/my-received")
     public Response<Object> getMyReceivedOrders() {
