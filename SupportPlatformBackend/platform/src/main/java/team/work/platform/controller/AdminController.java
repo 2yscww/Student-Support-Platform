@@ -53,16 +53,7 @@ public class AdminController {
         return adminService.deleteTaskAndHandleReports(orderCancelDTO.getOrderId());
     }
 
-    // ? 管理员查看所有任务
-    @GetMapping("/orders/list")
-    public Response<List<TaskDetailsDTO>> getAllOrders() {
-        List<TaskDetailsDTO> taskDetailsList = ordersService.getAllTaskDetails();
-        if (taskDetailsList != null && !taskDetailsList.isEmpty()) {
-            return Response.Success(taskDetailsList, "查询成功");
-        } else {
-            return Response.Success(null, "暂无任务");
-        }
-    }
+
 
 
     // * 管理员查看所有用户
